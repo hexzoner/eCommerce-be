@@ -1,2 +1,2 @@
-# Online shop backend API
+# Online shop backend
 ## Node.js / Express / PostgreSQL
