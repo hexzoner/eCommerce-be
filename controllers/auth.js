@@ -22,9 +22,11 @@ export const login = async (req, res) => {
 
   const found = await User.findOne({ where: { email } });
   if (!found) throw new ErrorResponse("Email not found", 401);
+  // if (!found) res.json({ status: "error", message: "Email not found" });
 
   const passwordMatch = await bcrypt.compare(password, found.password);
   if (!passwordMatch) throw new ErrorResponse("Wrong password", 401);
+  // if (!passwordMatch) res.json({ status: "error", message: "Wrong password" });
 
   const token = jwt.sign({ userId: found.id, email, role: found.role }, process.env.JWT_SECRET, {
     expiresIn: tokenExpireTime,
@@ -33,6 +35,7 @@ export const login = async (req, res) => {
   res.json({
     user: getUserResponse(found),
     token,
+    status: "success",
   });
 };
 
@@ -53,10 +56,7 @@ export async function signup(req, res) {
 
 export async function me(req, res) {
   const userId = req.userId;
-
   const user = await User.findByPk(userId);
   if (!user) throw new ErrorResponse("User doesnt exist", 404);
-  res.json({
-    user: getUserResponse(user),
-  });
+  res.json(getUserResponse(user));
 }
