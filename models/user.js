@@ -2,14 +2,15 @@ import { DataTypes } from "sequelize";
 import sequelize from "../db/index.js";
 
 const User = sequelize.define("user", {
-  name: {
+  role: {
     type: DataTypes.STRING,
     allowNull: false,
     unique: false,
+    defaultValue: "user",
     validate: {
-      len: {
-        args: [2, 30],
-        msg: "Name must be between 2 and 30 characters",
+      isIn: {
+        args: [["user", "admin"]],
+        msg: "Role must be either 'user' or 'admin'",
       },
     },
   },
@@ -19,8 +20,8 @@ const User = sequelize.define("user", {
     unique: false,
     validate: {
       len: {
-        args: [4, 30],
-        msg: "Password must be between 4 and 30 characters",
+        args: [2, 100],
+        msg: "Password must be between 2 and 100 characters",
       },
     },
   },
@@ -30,6 +31,43 @@ const User = sequelize.define("user", {
     unique: true,
     validate: {
       isEmail: { msg: "Email must be a valid email address" },
+      len: {
+        args: [2, 50],
+        msg: "Email must be between 2 and 50 characters",
+      },
+    },
+  },
+  firstName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+    validate: {
+      len: {
+        args: [2, 30],
+        msg: "First name must be between 2 and 30 characters",
+      },
+    },
+  },
+  lastName: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+    validate: {
+      len: {
+        args: [2, 30],
+        msg: "Last name must be between 2 and 30 characters",
+      },
+    },
+  },
+  address: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+    validate: {
+      len: {
+        args: [2, 30],
+        msg: "Address must be between 2 and 30 characters",
+      },
     },
   },
 });
