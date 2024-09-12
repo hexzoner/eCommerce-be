@@ -3,10 +3,19 @@ import { getProducts, createProduct, getProductById, updateProduct, deleteProduc
 import { asyncHandler } from "../middleware/errorHandler.js";
 import productSchema from "../schemas/products.js";
 import validate from "../middleware/validate.js";
+import verifyTokenMiddleware from "../middleware/verifyToken.js";
+import authorize from "../middleware/authorize.js";
 
 const productRouter = Router();
 
-productRouter.route("/").get(asyncHandler(getProducts)).post(validate(productSchema.POST), asyncHandler(createProduct));
-productRouter.route("/:id").get(asyncHandler(getProductById)).put(validate(productSchema.PUT), asyncHandler(updateProduct)).delete(asyncHandler(deleteProduct));
+productRouter
+  .route("/")
+  .get(asyncHandler(getProducts))
+  .post(verifyTokenMiddleware, authorize(["admin"]), validate(productSchema.POST), asyncHandler(createProduct));
+productRouter
+  .route("/:id")
+  .get(asyncHandler(getProductById))
+  .put(verifyTokenMiddleware, authorize(["admin"]), validate(productSchema.PUT), asyncHandler(updateProduct))
+  .delete(verifyTokenMiddleware, authorize(["admin"]), asyncHandler(deleteProduct));
 
 export default productRouter;

@@ -8,8 +8,8 @@ const Category = sequelize.define("category", {
     unique: true,
     validate: {
       len: {
-        args: [2, 30],
-        msg: "Category must be between 2 and 30 characters",
+        args: [2, 40],
+        msg: "Category must be between 2 and 40 characters",
       },
     },
   },

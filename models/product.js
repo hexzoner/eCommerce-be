@@ -8,8 +8,8 @@ const Product = sequelize.define("product", {
     unique: false,
     validate: {
       len: {
-        args: [2, 30],
-        msg: "Product name must be between 2 and 30 characters",
+        args: [2, 50],
+        msg: "Product name must be between 2 and 50 characters",
       },
     },
   },
@@ -19,8 +19,8 @@ const Product = sequelize.define("product", {
     unique: false,
     validate: {
       len: {
-        args: [2, 200],
-        msg: "Product description must be between 2 and 30 characters",
+        args: [2, 500],
+        msg: "Product description must be between 2 and 500 characters",
       },
     },
   },
