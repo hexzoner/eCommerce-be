@@ -10,6 +10,7 @@ export const getUsers = async (req, res) => {
       lastName: user.lastName,
       address: user.address,
       email: user.email,
+      role: user.role,
     };
   });
 

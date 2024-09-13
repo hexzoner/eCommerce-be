@@ -7,10 +7,7 @@ import verifyTokenMiddleware from "../middleware/verifyToken.js";
 
 const orderRouter = Router();
 
-orderRouter
-  .route("/")
-  .get(verifyTokenMiddleware, asyncHandler(getOrders))
-  .post(verifyTokenMiddleware, validate(orderSchema), asyncHandler(createOrder));
+orderRouter.route("/").get(asyncHandler(getOrders)).post(verifyTokenMiddleware, validate(orderSchema), asyncHandler(createOrder));
 
 orderRouter
   .route("/:id")

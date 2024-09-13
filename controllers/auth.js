@@ -45,10 +45,10 @@ export async function signup(req, res) {
   } = req;
 
   const found = await User.findOne({ where: { email } });
-  if (found) throw new ErrorResponse("User Already Exist", 409);
+  if (found) throw new ErrorResponse("Email already exist", 409);
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await User.create({ firstName, lastName, email, password: hashedPassword });
+  const user = await User.create({ firstName, lastName, email, password: hashedPassword, role });
   const token = jwt.sign({ userId: user.id, email, role }, process.env.JWT_SECRET, { expiresIn: tokenExpireTime });
 
   res.json({ user: { id: user.id, firstName, lastName, email, role }, token });

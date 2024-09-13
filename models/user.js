@@ -43,8 +43,8 @@ const User = sequelize.define("user", {
     unique: false,
     validate: {
       len: {
-        args: [2, 30],
-        msg: "First name must be between 2 and 30 characters",
+        args: [0, 30],
+        msg: "First name must be between 0 and 30 characters",
       },
     },
   },
@@ -54,8 +54,8 @@ const User = sequelize.define("user", {
     unique: false,
     validate: {
       len: {
-        args: [2, 30],
-        msg: "Last name must be between 2 and 30 characters",
+        args: [0, 30],
+        msg: "Last name must be between 0 and 30 characters",
       },
     },
   },
@@ -65,8 +65,8 @@ const User = sequelize.define("user", {
     unique: false,
     validate: {
       len: {
-        args: [2, 30],
-        msg: "Address must be between 2 and 30 characters",
+        args: [0, 30],
+        msg: "Address must be between 0 and 30 characters",
       },
     },
   },
