@@ -11,7 +11,7 @@ orderRouter.route("/").get(asyncHandler(getOrders)).post(verifyTokenMiddleware, 
 
 orderRouter
   .route("/:id")
-  .get(verifyTokenMiddleware, asyncHandler(getOrderById))
+  .get(asyncHandler(getOrderById))
   .put(verifyTokenMiddleware, validate(orderSchema), asyncHandler(updateOrder))
   .delete(verifyTokenMiddleware, asyncHandler(deleteOrder));
 

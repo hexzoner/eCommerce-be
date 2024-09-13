@@ -1,13 +1,30 @@
-import { Order, Product } from "../db/associations.js";
+import { Order, Product, User } from "../db/associations.js";
 import OrderProduct from "../models/orderProduct.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
 export const getOrders = async (req, res) => {
-  const orders = await Order.findAll({ include: Product });
+  const orders = await Order.findAll({
+    include: [
+      {
+        model: Product,
+      },
+      {
+        model: User,
+        attributes: ["id", "firstName", "lastName", "email"],
+      },
+    ],
+  });
+
   const result = orders.map((order) => {
     return {
       id: order.id,
       userId: order.userId,
+      user: {
+        id: order.user.id,
+        firstName: order.user.firstName,
+        lastName: order.user.lastName,
+        email: order.user.email,
+      },
       products: order.products.map((product) => {
         return {
           productId: product.orderProduct.productId,
