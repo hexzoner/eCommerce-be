@@ -17,6 +17,8 @@ export const getOrders = async (req, res) => {
         };
       }),
       total: order.total,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
     };
   });
 
