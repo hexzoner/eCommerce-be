@@ -13,15 +13,26 @@ function formatedProduct(product) {
     name: product.name,
     description: product.description,
     price: product.price,
-    categoryId: product.categoryId,
+    category: {
+      id: product.category.id,
+      name: product.category.name,
+    },
   };
 }
 
 export const getProducts = async (req, res) => {
   const categoryId = req.query.category;
   let products = [];
-  if (categoryId) products = await Product.findAll({ where: { categoryId } });
-  else products = await Product.findAll();
+  if (categoryId)
+    products = await Product.findAll({
+      where: { categoryId },
+      include: [
+        {
+          model: Category,
+        },
+      ],
+    });
+  products = await Product.findAll({ include: Category });
 
   res.json(formatedResults(products));
 };
