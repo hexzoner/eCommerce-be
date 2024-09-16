@@ -14,8 +14,8 @@ const verifyTokenMiddleware = (req, res, next) => {
 
     // Create custom properties in request object
     req.userId = payload.userId;
-    req.email = payload.email;
-    req.role = payload.role;
+    req.userEmail = payload.userEmail;
+    req.userRole = payload.userRole;
     next(); // Call next handler
   } catch (e) {
     next(e);

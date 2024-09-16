@@ -28,7 +28,7 @@ export const login = async (req, res) => {
   if (!passwordMatch) throw new ErrorResponse("Wrong password", 401);
   // if (!passwordMatch) res.json({ status: "error", message: "Wrong password" });
 
-  const token = jwt.sign({ userId: found.id, email, role: found.role }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ userId: found.id, userEmail: email, userRole: found.role }, process.env.JWT_SECRET, {
     expiresIn: tokenExpireTime,
   });
 
@@ -49,7 +49,7 @@ export async function signup(req, res) {
 
   const hashedPassword = await bcrypt.hash(password, 10);
   const user = await User.create({ firstName, lastName, email, password: hashedPassword, role });
-  const token = jwt.sign({ userId: user.id, email, role }, process.env.JWT_SECRET, { expiresIn: tokenExpireTime });
+  const token = jwt.sign({ userId: user.id, userEmail: email, userRole: role }, process.env.JWT_SECRET, { expiresIn: tokenExpireTime });
 
   res.json({ user: { id: user.id, firstName, lastName, email, role }, token });
 }
