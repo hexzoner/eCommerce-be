@@ -3,7 +3,17 @@ import { ErrorResponse } from "../utils/ErrorResponse.js";
 
 function formatedResults(products) {
   return products.map((product) => {
-    return formatedProduct(product);
+    return {
+      id: product.id,
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: {
+        id: product.category.id,
+        name: product.category.name,
+      },
+      createdAt: product.createdAt,
+    };
   });
 }
 
@@ -13,10 +23,7 @@ function formatedProduct(product) {
     name: product.name,
     description: product.description,
     price: product.price,
-    category: {
-      id: product.category.id,
-      name: product.category.name,
-    },
+    category: product.categoryId,
   };
 }
 
@@ -39,7 +46,14 @@ export const getProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   const product = await Product.create(req.body);
-  res.json(formatedProduct(product));
+  // console.log(product.dataValues);
+  res.json({
+    id: product.id,
+    name: product.name,
+    description: product.description,
+    price: product.price,
+    category: product.categoryId,
+  });
 };
 
 export const getProductById = async (req, res) => {
@@ -56,7 +70,7 @@ export const updateProduct = async (req, res) => {
   const product = await Product.findByPk(id);
   if (!product) throw new ErrorResponse("Product not found", 404);
   await product.update(req.body);
-  res.json(formatedProduct(product));
+  res.json(product);
 };
 
 export const deleteProduct = async (req, res) => {

@@ -2,16 +2,16 @@ import Joi from "joi";
 
 const productSchema = {
   POST: Joi.object({
-    name: Joi.string().min(2).max(30).required(),
+    name: Joi.string().min(1).max(100).required(),
     price: Joi.number().min(1).required(),
     categoryId: Joi.number().integer().required(),
-    description: Joi.string().min(2).max(200).required(),
+    description: Joi.string().min(1).max(1000).required(),
   }),
   PUT: Joi.object({
-    name: Joi.string().min(2).max(30).optional(),
+    name: Joi.string().min(1).max(100).optional(),
     price: Joi.number().min(1).optional(),
     categoryId: Joi.number().integer().optional(),
-    description: Joi.string().min(2).max(200).optional(),
+    description: Joi.string().min(1).max(1000).optional(),
   }),
 };
 
