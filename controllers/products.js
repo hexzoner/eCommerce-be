@@ -13,6 +13,7 @@ function formatedResults(products) {
         name: product.category.name,
       },
       createdAt: product.createdAt,
+      image: product.image,
     };
   });
 }
@@ -24,6 +25,7 @@ function formatedProduct(product) {
     description: product.description,
     price: product.price,
     category: product.categoryId,
+    image: product.image,
   };
 }
 
@@ -47,13 +49,7 @@ export const getProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
   const product = await Product.create(req.body);
   // console.log(product.dataValues);
-  res.json({
-    id: product.id,
-    name: product.name,
-    description: product.description,
-    price: product.price,
-    category: product.categoryId,
-  });
+  res.json(formatedProduct(product));
 };
 
 export const getProductById = async (req, res) => {

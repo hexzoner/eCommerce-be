@@ -32,6 +32,11 @@ const Product = sequelize.define("product", {
       isFloat: { msg: "Price must be a float number" },
     },
   },
+  image: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+  },
 });
 
 export default Product;
