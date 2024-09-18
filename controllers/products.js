@@ -1,4 +1,4 @@
-import { Product, Category } from "../db/associations.js";
+import { Product, Category, Color } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
 function formatedResults(products) {
@@ -11,6 +11,10 @@ function formatedResults(products) {
       category: {
         id: product.category.id,
         name: product.category.name,
+      },
+      color: {
+        id: product.color.id,
+        name: product.color.name,
       },
       createdAt: product.createdAt,
       image: product.image,
@@ -41,7 +45,16 @@ export const getProducts = async (req, res) => {
         },
       ],
     });
-  products = await Product.findAll({ include: Category });
+  products = await Product.findAll({
+    include: [
+      {
+        model: Category,
+      },
+      {
+        model: Color,
+      },
+    ],
+  });
 
   res.json(formatedResults(products));
 };

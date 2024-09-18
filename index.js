@@ -6,6 +6,7 @@ import categoryRouter from "./routes/categoryRoutes.js";
 import productRouter from "./routes/productRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
 import authRouter from "./routes/authRoutes.js";
+import colorRouter from "./routes/colorRoutes.js";
 
 const app = express();
 export const port = process.env.PORT || 3030;
@@ -15,6 +16,7 @@ app.use(express.json());
 
 app.use("/users", userRouter);
 app.use("/categories", categoryRouter);
+app.use("/colors", colorRouter);
 app.use("/products", productRouter);
 app.use("/orders", orderRouter);
 app.use("/auth", authRouter);
