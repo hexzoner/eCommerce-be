@@ -9,7 +9,8 @@ const wishlistRouter = Router();
 wishlistRouter
   .route("/")
   .get(verifyTokenMiddleware, authorize(["user"]), asyncHandler(GetWishlist))
-  .post(verifyTokenMiddleware, authorize(["user"]), asyncHandler(AddToWishlist))
-  .delete(verifyTokenMiddleware, authorize(["user"]), asyncHandler(RemoveFromWishlist));
+  .post(verifyTokenMiddleware, authorize(["user"]), asyncHandler(AddToWishlist));
+
+wishlistRouter.route("/:id").delete(verifyTokenMiddleware, authorize(["user"]), asyncHandler(RemoveFromWishlist));
 
 export default wishlistRouter;

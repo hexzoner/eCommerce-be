@@ -49,11 +49,16 @@ export const AddToWishlist = async (req, res) => {
 
 export const RemoveFromWishlist = async (req, res) => {
   const userId = req.userId;
-  const { productId } = req.body;
+  const productId = req.params.id;
+
+  if (!productId) throw new ErrorResponse("ProductId is required", 400);
 
   const wishlist = await Wishlist.findOne({ where: { userId, productId } });
   if (!wishlist) throw new ErrorResponse("Product is not in wishlist", 404);
 
   await wishlist.destroy();
-  res.json({ status: "success" });
+  res.json({
+    status: "success",
+    message: "Product removed from wishlist",
+  });
 };
