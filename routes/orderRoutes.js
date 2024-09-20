@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getOrders, createOrder, getOrderById, updateOrder, deleteOrder } from "../controllers/orders.js";
+import { getOrders, createOrder, getOrderById, updateOrder, deleteOrder, getUserOrders } from "../controllers/orders.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import validate from "../middleware/validate.js";
 import orderSchema from "../schemas/orders.js";
@@ -11,6 +11,8 @@ orderRouter
   .route("/")
   .get(verifyTokenMiddleware, asyncHandler(getOrders))
   .post(verifyTokenMiddleware, validate(orderSchema), asyncHandler(createOrder));
+
+orderRouter.route("/user").get(verifyTokenMiddleware, asyncHandler(getUserOrders));
 
 orderRouter
   .route("/:id")

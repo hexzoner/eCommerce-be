@@ -7,6 +7,7 @@ import productRouter from "./routes/productRoutes.js";
 import orderRouter from "./routes/orderRoutes.js";
 import authRouter from "./routes/authRoutes.js";
 import colorRouter from "./routes/colorRoutes.js";
+import wishlistRouter from "./routes/wishlistRoutes.js";
 
 const app = express();
 export const port = process.env.PORT || 3030;
@@ -20,6 +21,7 @@ app.use("/colors", colorRouter);
 app.use("/products", productRouter);
 app.use("/orders", orderRouter);
 app.use("/auth", authRouter);
+app.use("/wishlist", wishlistRouter);
 
 app.use(errorHandler);
 

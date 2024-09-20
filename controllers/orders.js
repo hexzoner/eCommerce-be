@@ -1,6 +1,25 @@
+import { json } from "sequelize";
 import { Order, Product, User } from "../db/associations.js";
 import OrderProduct from "../models/orderProduct.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
+
+export const getUserOrders = async (req, res) => {
+  const userId = req.userId;
+  const orders = await Order.findAll({
+    where: { userId },
+    include: [
+      {
+        model: Product,
+      },
+      {
+        model: User,
+        attributes: ["id", "firstName", "lastName", "email"],
+      },
+    ],
+  });
+
+  res.json(orders);
+};
 
 export const getOrders = async (req, res) => {
   const orders = await Order.findAll({
