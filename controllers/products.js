@@ -1,5 +1,6 @@
 import { Product, Category, Color } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
+import { Op } from "sequelize";
 
 function formatedResults(products) {
   return products.map((product) => {
@@ -35,21 +36,20 @@ function formatedProduct(product) {
 }
 
 export const getProducts = async (req, res) => {
-  const categoryId = req.query.category;
-  let products = [];
-  if (categoryId)
-    products = await Product.findAll({
-      where: { categoryId },
-      include: [
-        {
-          model: Category,
-        },
-        {
-          model: Color,
-        },
-      ],
-    });
-  products = await Product.findAll({
+  // const categoryId = req.query.category;
+  const {
+    query: { page, perPage, category, color },
+  } = req;
+
+  const categories = category ? category.split(",") : [];
+  const colors = color ? color.split(",") : [];
+
+  const products = await Product.findAll({
+    where: {
+      categoryId: categories.length > 0 ? categories : { [Op.ne]: null },
+      colorId: colors.length > 0 ? colors : { [Op.ne]: null },
+    },
+    attributes: { exclude: ["categoryId", "colorId"] },
     include: [
       {
         model: Category,
@@ -59,7 +59,6 @@ export const getProducts = async (req, res) => {
       },
     ],
   });
-
   res.json(formatedResults(products));
 };
 
