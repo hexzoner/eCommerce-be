@@ -30,6 +30,7 @@ function formatedProduct(product) {
     price: product.price,
     category: product.categoryId,
     image: product.image,
+    color: product.colorId,
   };
 }
 
@@ -42,6 +43,9 @@ export const getProducts = async (req, res) => {
       include: [
         {
           model: Category,
+        },
+        {
+          model: Color,
         },
       ],
     });
@@ -67,9 +71,18 @@ export const createProduct = async (req, res) => {
 
 export const getProductById = async (req, res) => {
   const id = req.params.id;
-  const product = await Product.findByPk(id, { include: Category });
+  const product = await Product.findByPk(id, {
+    include: [
+      {
+        model: Category,
+      },
+      {
+        model: Color,
+      },
+    ],
+  });
   if (!product) throw new ErrorResponse("Product not found", 404);
-  res.json(formatedProduct(product));
+  res.json(product);
 };
 
 export const updateProduct = async (req, res) => {
