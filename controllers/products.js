@@ -1,4 +1,4 @@
-import { Product, Category, Color } from "../db/associations.js";
+import { Product, Category, Color, Size } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import { Op } from "sequelize";
 
@@ -19,6 +19,12 @@ function formatedResults(products) {
       },
       createdAt: product.createdAt,
       image: product.image,
+      // sizes: product.sizes.map((size) => {
+      //   return {
+      //     id: size.id,
+      //     name: size.name,
+      //   };
+      // }),
     };
   });
 }
@@ -38,11 +44,12 @@ function formatedProduct(product) {
 export const getProducts = async (req, res) => {
   // const categoryId = req.query.category;
   const {
-    query: { page, perPage, category, color },
+    query: { page, perPage, category, color, size },
   } = req;
 
   const categories = category ? category.split(",") : [];
   const colors = color ? color.split(",") : [];
+  const sizes = size ? size.split(",") : [];
 
   const products = await Product.findAll({
     where: {
@@ -57,9 +64,15 @@ export const getProducts = async (req, res) => {
       {
         model: Color,
       },
+      {
+        model: Size, // Join the Size table (many-to-many relationship)
+        through: { attributes: [] }, // Exclude attributes from the join table (ProductSize)
+        where: sizes.length > 0 ? { id: sizes } : {}, // Filter sizes if provided
+        required: false, // Include products without sizes (LEFT OUTER JOIN)
+      },
     ],
   });
-  res.json(formatedResults(products));
+  res.json(products);
 };
 
 export const createProduct = async (req, res) => {
@@ -71,12 +84,17 @@ export const createProduct = async (req, res) => {
 export const getProductById = async (req, res) => {
   const id = req.params.id;
   const product = await Product.findByPk(id, {
+    attributes: { exclude: ["categoryId", "colorId"] },
     include: [
       {
         model: Category,
       },
       {
         model: Color,
+      },
+      {
+        model: Size,
+        through: { attributes: [] },
       },
     ],
   });
@@ -88,10 +106,54 @@ export const updateProduct = async (req, res) => {
   const {
     params: { id },
   } = req;
-  const product = await Product.findByPk(id);
+
+  const sizes = req.body.sizes;
+
+  const product = await Product.findByPk(id, {
+    attributes: { exclude: ["categoryId", "colorId"] },
+    include: [
+      {
+        model: Category,
+      },
+      {
+        model: Color,
+      },
+      {
+        model: Size,
+        through: { attributes: [] },
+      },
+    ],
+  });
   if (!product) throw new ErrorResponse("Product not found", 404);
   await product.update(req.body);
-  res.json(product);
+
+  if (sizes) {
+    const validSizes = await Size.findAll({ where: { id: sizes } });
+    if (validSizes.length !== sizes.length) {
+      throw new ErrorResponse("One or more size IDs are invalid.", 400);
+    }
+    await product.setSizes(sizes);
+  }
+
+  // Fetch the updated product, including associated sizes
+  const updatedProduct = await Product.findByPk(id, {
+    attributes: { exclude: ["categoryId", "colorId"] },
+    include: [
+      {
+        model: Category,
+      },
+      {
+        model: Color,
+      },
+      {
+        model: Size,
+        through: { attributes: [] }, // Exclude junction table attributes
+      },
+    ],
+  });
+
+  // Respond with the updated product
+  res.json(updatedProduct);
 };
 
 export const deleteProduct = async (req, res) => {
