@@ -7,6 +7,8 @@ import Category from "../models/category.js";
 import Color from "../models/Color.js";
 import OrderProduct from "../models/orderProduct.js";
 import Wishlist from "../models/wishlist.js";
+import Size from "../models/Size.js";
+import ProductSize from "../models/productSize.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
@@ -23,6 +25,9 @@ Product.belongsToMany(Order, { through: OrderProduct });
 User.belongsToMany(Product, { through: Wishlist });
 Product.belongsToMany(User, { through: Wishlist });
 
+Product.belongsToMany(Size, { through: ProductSize });
+Size.belongsToMany(Product, { through: ProductSize });
+
 sequelize.sync({ alter: true });
 
-export { User, Order, Product, Category, Color, OrderProduct };
+export { User, Order, Product, Category, Color, OrderProduct, ProductSize, Size, Wishlist };

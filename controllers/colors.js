@@ -1,7 +1,7 @@
 import { Color } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
-function formatedCategory(color) {
+function formatedColor(color) {
   return {
     id: color.id,
     name: color.name,
@@ -13,14 +13,14 @@ export const getColors = async (req, res) => {
 
   res.json(
     colors.map((category) => {
-      return formatedCategory(category);
+      return formatedColor(category);
     })
   );
 };
 
 export const createColor = async (req, res) => {
   const color = await Color.create(req.body);
-  res.json(formatedCategory(color));
+  res.json(formatedColor(color));
 };
 
 export const getColorById = async (req, res) => {
@@ -29,7 +29,7 @@ export const getColorById = async (req, res) => {
   } = req;
   const color = await Color.findByPk(id);
   if (!color) throw new ErrorResponse("Color not found", 404);
-  res.json(formatedCategory(color));
+  res.json(formatedColor(color));
 };
 
 export const updateColor = async (req, res) => {
@@ -40,7 +40,7 @@ export const updateColor = async (req, res) => {
   const color = await Color.findByPk(id);
   if (!color) throw new ErrorResponse("Color not found", 404);
   await color.update(req.body);
-  res.json(formatedCategory(color));
+  res.json(formatedColor(color));
 };
 
 export const deleteColor = async (req, res) => {
