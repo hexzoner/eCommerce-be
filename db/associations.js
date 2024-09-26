@@ -28,6 +28,9 @@ Product.belongsToMany(User, { through: Wishlist });
 Product.belongsToMany(Size, { through: ProductSize });
 Size.belongsToMany(Product, { through: ProductSize });
 
+Product.belongsTo(Size, { as: "defaultSize", foreignKey: "defaultSizeId" });
+Size.hasMany(Product, { as: "defaultForProducts", foreignKey: "defaultSizeId" });
+
 sequelize.sync({ alter: true });
 
 export { User, Order, Product, Category, Color, OrderProduct, ProductSize, Size, Wishlist };
