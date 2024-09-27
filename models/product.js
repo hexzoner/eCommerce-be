@@ -37,6 +37,12 @@ const Product = sequelize.define("product", {
     allowNull: true,
     unique: false,
   },
+  active: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    unique: false,
+    defaultValue: true,
+  },
 });
 
 export default Product;

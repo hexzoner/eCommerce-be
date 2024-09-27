@@ -11,6 +11,7 @@ const productSchema = {
     sizes: Joi.array().items(Joi.number().integer()).required(),
     defaultSizeId: Joi.number().integer().required(),
     colors: Joi.array().items(Joi.number().integer()).required(),
+    active: Joi.boolean().optional(),
   }),
   PUT: Joi.object({
     name: Joi.string().min(1).max(100).optional(),
@@ -22,6 +23,7 @@ const productSchema = {
     sizes: Joi.array().items(Joi.number().integer()).optional(),
     defaultSizeId: Joi.number().integer().optional(),
     colors: Joi.array().items(Joi.number().integer()).optional(),
+    active: Joi.boolean().optional(),
   }),
 };
 
