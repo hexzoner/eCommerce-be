@@ -2,45 +2,6 @@ import { Product, Category, Color, Size } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import { Op } from "sequelize";
 
-// function formatedResults(products) {
-//   return products.map((product) => {
-//     return {
-//       id: product.id,
-//       name: product.name,
-//       description: product.description,
-//       price: product.price,
-//       category: {
-//         id: product.category.id,
-//         name: product.category.name,
-//       },
-//       color: {
-//         id: product.color.id,
-//         name: product.color.name,
-//       },
-//       createdAt: product.createdAt,
-//       image: product.image,
-//       // sizes: product.sizes.map((size) => {
-//       //   return {
-//       //     id: size.id,
-//       //     name: size.name,
-//       //   };
-//       // }),
-//     };
-//   });
-// }
-
-// function formatedProduct(product) {
-//   return {
-//     id: product.id,
-//     name: product.name,
-//     description: product.description,
-//     price: product.price,
-//     category: product.categoryId,
-//     image: product.image,
-//     color: product.colorId,
-//   };
-// }
-
 export const getProducts = async (req, res) => {
   const {
     query: { page, perPage, category, color, size },
@@ -53,9 +14,9 @@ export const getProducts = async (req, res) => {
   const products = await Product.findAll({
     where: {
       categoryId: categories.length > 0 ? categories : { [Op.ne]: null },
-      colorId: colors.length > 0 ? colors : { [Op.ne]: null },
+      defaultColorId: colors.length > 0 ? colors : { [Op.ne]: null },
     },
-    attributes: { exclude: ["categoryId", "colorId", "defaultSizeId"] },
+    attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId"] },
     include: [
       {
         model: Category,
@@ -63,6 +24,7 @@ export const getProducts = async (req, res) => {
       },
       {
         model: Color,
+        as: "defaultColor",
         attributes: ["id", "name"],
       },
       {
@@ -70,11 +32,16 @@ export const getProducts = async (req, res) => {
         attributes: ["id", "name"],
         through: { attributes: [] }, // Exclude attributes from the join table (ProductSize)
         where: sizes.length > 0 ? { id: sizes } : {}, // Filter sizes if provided
-        required: false, // Include products without sizes (LEFT OUTER JOIN)
+        // required: false, // Include products without sizes (LEFT OUTER JOIN)
       },
       {
         model: Size, // Include the default size (one-to-many relationship)
         as: "defaultSize",
+        attributes: ["id", "name"],
+      },
+      {
+        model: Color,
+        through: { attributes: [] }, // Exclude attributes from the join table (ProductColor)
         attributes: ["id", "name"],
       },
     ],
@@ -98,7 +65,7 @@ export const getProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   const product = await Product.create(req.body);
-  const { sizes, defaultSizeId } = req.body;
+  const { sizes, defaultSizeId, colors } = req.body;
 
   if (sizes) {
     const validSizes = await Size.findAll({ where: { id: sizes } });
@@ -111,6 +78,14 @@ export const createProduct = async (req, res) => {
   if (defaultSizeId) {
     const size = await Size.findByPk(defaultSizeId);
     if (!size) throw new ErrorResponse("Default size ID is invalid.", 400);
+  }
+
+  if (colors) {
+    const validColors = await Color.findAll({ where: { id: colors } });
+    if (validColors.length !== colors.length) {
+      throw new ErrorResponse("One or more color IDs are invalid.", 400);
+    }
+    await product.setColors(colors);
   }
 
   const createdProduct = await Product.findByPk(product.id, {
@@ -136,7 +111,7 @@ export const createProduct = async (req, res) => {
 export const getProductById = async (req, res) => {
   const id = req.params.id;
   const product = await Product.findByPk(id, {
-    attributes: { exclude: ["categoryId", "colorId", "defaultSizeId", "createdAt", "updatedAt"] },
+    attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId", "createdAt", "updatedAt"] },
     include: [
       {
         model: Category,
@@ -144,16 +119,22 @@ export const getProductById = async (req, res) => {
       },
       {
         model: Color,
+        as: "defaultColor",
         attributes: ["id", "name"],
       },
       {
-        model: Size,
+        model: Color,
         through: { attributes: [] },
         attributes: ["id", "name"],
       },
       {
         model: Size, // Include the default size (one-to-many relationship)
         as: "defaultSize",
+        attributes: ["id", "name"],
+      },
+      {
+        model: Size,
+        through: { attributes: [] },
         attributes: ["id", "name"],
       },
     ],
@@ -181,7 +162,7 @@ export const updateProduct = async (req, res) => {
     params: { id },
   } = req;
 
-  const { sizes, defaultSizeId } = req.body;
+  const { sizes, defaultSizeId, colors } = req.body;
 
   const product = await Product.findByPk(id, {
     attributes: { exclude: ["categoryId", "colorId"] },
@@ -215,6 +196,14 @@ export const updateProduct = async (req, res) => {
       throw new ErrorResponse("One or more size IDs are invalid.", 400);
     }
     await product.setSizes(sizes);
+  }
+
+  if (colors) {
+    const validColors = await Color.findAll({ where: { id: colors } });
+    if (validColors.length !== colors.length) {
+      throw new ErrorResponse("One or more color IDs are invalid.", 400);
+    }
+    await product.setColors(colors);
   }
 
   await product.update(req.body);
