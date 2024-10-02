@@ -12,4 +12,15 @@ const OrderProduct = sequelize.define("orderProduct", {
   },
 });
 
-export default OrderProduct;
+const CartProduct = sequelize.define("cartProduct", {
+  quantity: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    unique: false,
+    validate: {
+      isInt: { msg: "Quantity must be an integer" },
+    },
+  },
+});
+
+export { OrderProduct, CartProduct };

@@ -70,6 +70,11 @@ const User = sequelize.define("user", {
       },
     },
   },
+  // cartId: {
+  //   type: DataTypes.INTEGER,
+  //   allowNull: true,
+  //   unique: false,
+  // },
 });
 
 export default User;

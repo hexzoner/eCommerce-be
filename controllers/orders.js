@@ -1,6 +1,6 @@
-import { json } from "sequelize";
+// import { json } from "sequelize";
 import { Order, Product, User } from "../db/associations.js";
-import OrderProduct from "../models/orderProduct.js";
+import { OrderProduct } from "../models/orderProduct.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
 export const getUserOrders = async (req, res) => {
