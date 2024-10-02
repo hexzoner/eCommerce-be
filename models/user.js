@@ -70,11 +70,15 @@ const User = sequelize.define("user", {
       },
     },
   },
-  // cartId: {
-  //   type: DataTypes.INTEGER,
-  //   allowNull: true,
-  //   unique: false,
-  // },
+  cartTotal: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+    unique: false,
+    defaultValue: 0,
+    validate: {
+      isFloat: { msg: "Cart total must be a float number" },
+    },
+  },
 });
 
 export default User;
