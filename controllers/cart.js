@@ -1,5 +1,5 @@
 // import { json } from "sequelize";
-import { Product, User, Category, Color } from "../db/associations.js";
+import { Product, User, Category, Color, Size } from "../db/associations.js";
 import { CartProduct } from "../models/orderProduct.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
@@ -7,23 +7,62 @@ async function getCart(userId) {
   return await User.findByPk(userId, {
     include: {
       model: Product,
+      as: "CartProducts", // Alias the included model
       through: {
         model: CartProduct,
-        attributes: [],
+        attributes: ["quantity"], // Include the 'through' table (CartProduct) attributes (quantity, etc.)
       },
+      attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId"] },
       include: [
-        { model: Category, attributes: ["name"] },
-        { model: Color, attributes: ["name"] },
+        {
+          model: Category,
+          attributes: ["name", "id"],
+        },
+        {
+          model: Color,
+          attributes: ["name", "id"],
+          through: { attributes: [] }, // Exclude 'productColor' pivot table data
+        },
+        {
+          model: Size,
+          through: { attributes: [] }, // Exclude 'through' attributes for Size
+        },
+        {
+          model: Color,
+          as: "defaultColor", // Alias for the default color
+          attributes: ["name", "id"], // Include the default color's name and id
+        },
+        {
+          model: Size,
+          as: "defaultSize", // Alias for the default size
+          attributes: ["name", "id"], // Include the default size's name and id
+        },
       ],
     },
   });
+}
+
+function cartResponse(userCart) {
+  return userCart.CartProducts;
+  //         .map((product) => ({
+  //     id: product.id,
+  //     name: product.name,
+  //     description: product.description,
+  //     price: product.price,
+  //     quantity: product.cartProduct.quantity,
+  //     category: product.category.name,
+  //     color: product.Color.name,
+  //     colors: product.colors.map((color) => color.name),
+  //     image: product.image,
+  //     active: product.active,
+  //   }));
 }
 
 export const getUserCart = async (req, res) => {
   const userId = req.userId;
   const userCart = await getCart(userId);
   if (!userCart) throw new ErrorResponse("User not found", 404);
-  res.json(userCart);
+  res.json(cartResponse(userCart));
 };
 
 export const updateCart = async (req, res) => {
@@ -34,4 +73,25 @@ export const updateCart = async (req, res) => {
 
   const product = await Product.findByPk(productId);
   if (!product) throw new ErrorResponse("Product not found", 404);
+
+  if (quantity < 0) throw new ErrorResponse("Quantity must be at least 0", 400);
+
+  if (quantity === 0) await userCart.removeCartProduct(product);
+  else {
+    console.log("Adding product to cart");
+    const result = await userCart.addCartProduct(product, { through: { quantity } });
+    console.log(result);
+  }
+
+  // Refetch the cart with the updated products
+  const updatedCart = await getCart(userId);
+  res.json(cartResponse(updatedCart));
+};
+
+export const ClearCart = async (req, res) => {
+  const userId = req.userId;
+  const userCart = await getCart(userId);
+  if (!userCart) throw new ErrorResponse("User not found", 404);
+  await userCart.setCartProducts([]);
+  res.json(cartResponse(await getCart(userId)));
 };

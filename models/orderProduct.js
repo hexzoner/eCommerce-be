@@ -17,6 +17,7 @@ const CartProduct = sequelize.define("cartProduct", {
     type: DataTypes.INTEGER,
     allowNull: false,
     unique: false,
+    defaultValue: 1,
     validate: {
       isInt: { msg: "Quantity must be an integer" },
     },

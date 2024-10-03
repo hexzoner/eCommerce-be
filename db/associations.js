@@ -23,11 +23,11 @@ Product.belongsTo(Category, { foreignKey: { name: "categoryId", allowNull: false
 Order.belongsToMany(Product, { through: OrderProduct });
 Product.belongsToMany(Order, { through: OrderProduct });
 
-User.belongsToMany(Product, { through: CartProduct });
-Product.belongsToMany(User, { through: CartProduct });
+User.belongsToMany(Product, { through: CartProduct, as: "CartProducts" });
+Product.belongsToMany(User, { through: CartProduct, as: "CartProducts" });
 
-User.belongsToMany(Product, { through: Wishlist });
-Product.belongsToMany(User, { through: Wishlist });
+User.belongsToMany(Product, { through: Wishlist, as: "WishlistProducts" });
+Product.belongsToMany(User, { through: Wishlist, as: "WishlistProducts" });
 
 Product.belongsToMany(Color, { through: ProductColor });
 Color.belongsToMany(Product, { through: ProductColor });

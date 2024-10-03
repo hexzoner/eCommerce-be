@@ -7,6 +7,7 @@ export const GetWishlist = async (req, res) => {
   const userWishlist = await User.findByPk(userId, {
     include: {
       model: Product,
+      as: "WishlistProducts", // Alias for wishlist
       through: { attributes: [] }, // This will exclude the Wishlist join table from the response
       include: [
         { model: Category, attributes: ["name"] }, // Include category name
