@@ -16,7 +16,7 @@ export const GetWishlist = async (req, res) => {
     },
   });
 
-  res.json(userWishlist.products);
+  res.json(userWishlist.WishlistProducts);
 };
 
 export const AddToWishlist = async (req, res) => {

@@ -43,19 +43,11 @@ async function getCart(userId) {
 }
 
 function cartResponse(userCart) {
-  return userCart.CartProducts;
-  //         .map((product) => ({
-  //     id: product.id,
-  //     name: product.name,
-  //     description: product.description,
-  //     price: product.price,
-  //     quantity: product.cartProduct.quantity,
-  //     category: product.category.name,
-  //     color: product.Color.name,
-  //     colors: product.colors.map((color) => color.name),
-  //     image: product.image,
-  //     active: product.active,
-  //   }));
+  // Calculate the total price
+  const totalPrice = userCart.CartProducts.reduce((total, product) => {
+    return total + product.price * product.cartProduct.quantity;
+  }, 0);
+  return { products: userCart.CartProducts, total: totalPrice.toFixed(2) };
 }
 
 export const getUserCart = async (req, res) => {
@@ -77,11 +69,7 @@ export const updateCart = async (req, res) => {
   if (quantity < 0) throw new ErrorResponse("Quantity must be at least 0", 400);
 
   if (quantity === 0) await userCart.removeCartProduct(product);
-  else {
-    console.log("Adding product to cart");
-    const result = await userCart.addCartProduct(product, { through: { quantity } });
-    console.log(result);
-  }
+  else await userCart.addCartProduct(product, { through: { quantity } });
 
   // Refetch the cart with the updated products
   const updatedCart = await getCart(userId);
