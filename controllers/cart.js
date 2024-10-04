@@ -1,4 +1,5 @@
 // import { json } from "sequelize";
+import { col } from "sequelize";
 import { Product, User, Category, Color, Size } from "../db/associations.js";
 import { CartProduct } from "../models/orderProduct.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
@@ -10,7 +11,7 @@ async function getCart(userId) {
       as: "CartProducts", // Alias the included model
       through: {
         model: CartProduct,
-        attributes: ["quantity"], // Include the 'through' table (CartProduct) attributes (quantity, etc.)
+        attributes: ["quantity", "color", "size"], // Include the 'through' table (CartProduct) attributes (quantity, etc.)
       },
       attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId"] },
       include: [
@@ -59,7 +60,8 @@ export const getUserCart = async (req, res) => {
 
 export const updateCart = async (req, res) => {
   const userId = req.userId;
-  const { productId, quantity } = req.body;
+  const { productId, quantity, color, size } = req.body;
+
   const userCart = await getCart(userId);
   if (!userCart) throw new ErrorResponse("User not found", 404);
 
@@ -68,8 +70,22 @@ export const updateCart = async (req, res) => {
 
   if (quantity < 0) throw new ErrorResponse("Quantity must be at least 0", 400);
 
-  if (quantity === 0) await userCart.removeCartProduct(product);
-  else await userCart.addCartProduct(product, { through: { quantity } });
+  if (!color || !size) throw new ErrorResponse("Quantity, color, and size are required", 400);
+  const existingCartProduct = await CartProduct.findOne({
+    where: {
+      userId,
+      productId,
+      color: String(color),
+      size: String(size),
+    },
+  });
+
+  if (existingCartProduct) {
+    if (quantity === 0) await userCart.removeCartProduct(product);
+    else await existingCartProduct.update({ quantity });
+  } else {
+    await userCart.addCartProduct(product, { through: { quantity, color, size } });
+  }
 
   // Refetch the cart with the updated products
   const updatedCart = await getCart(userId);

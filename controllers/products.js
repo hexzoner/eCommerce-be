@@ -185,9 +185,9 @@ export const updateProduct = async (req, res) => {
     const size = await Size.findByPk(defaultSizeId);
     if (!size) throw new ErrorResponse("Default size ID is invalid.", 400);
 
-    if (!product.sizes.map((size) => size.id).includes(defaultSizeId)) {
-      throw new ErrorResponse("Default size ID must be one of the product's sizes.", 400);
-    }
+    // if (!product.sizes.map((size) => size.id).includes(defaultSizeId)) {
+    //   throw new ErrorResponse("Default size ID must be one of the product's sizes.", 400);
+    // }
   }
 
   if (sizes) {

@@ -22,6 +22,16 @@ const CartProduct = sequelize.define("cartProduct", {
       isInt: { msg: "Quantity must be an integer" },
     },
   },
+  color: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: false,
+  },
+  size: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: false,
+  },
 });
 
 export { OrderProduct, CartProduct };
