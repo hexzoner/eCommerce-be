@@ -8,14 +8,11 @@ import authorize from "../middleware/authorize.js";
 
 const productRouter = Router();
 
-productRouter
-  .route("/")
-  .get(asyncHandler(getProducts))
-  .post(verifyTokenMiddleware, authorize(["admin"]), validate(productSchema.POST), asyncHandler(createProduct));
+productRouter.route("/").get(asyncHandler(getProducts)).post(verifyTokenMiddleware, validate(productSchema.POST), asyncHandler(createProduct));
 productRouter
   .route("/:id")
   .get(asyncHandler(getProductById))
-  .put(verifyTokenMiddleware, authorize(["admin"]), validate(productSchema.PUT), asyncHandler(updateProduct))
+  .put(verifyTokenMiddleware, validate(productSchema.PUT), asyncHandler(updateProduct))
   .delete(verifyTokenMiddleware, authorize(["admin"]), asyncHandler(deleteProduct));
 
 export default productRouter;
