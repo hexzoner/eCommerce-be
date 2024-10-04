@@ -60,3 +60,7 @@ export async function me(req, res) {
   if (!user) throw new ErrorResponse("User doesnt exist", 404);
   res.json(getUserResponse(user));
 }
+
+export async function refresh(req, res) {
+  res.json({ status: "success" });
+}
