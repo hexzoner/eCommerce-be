@@ -75,13 +75,24 @@ export const updateCart = async (req, res) => {
       // If the combination exists, update the quantity
       if (quantity === 0) {
         // Remove the product from the cart if quantity is set to 0
-        await cartProduct.destroy({ transaction });
+        await CartProduct.destroy({
+          where: {
+            userId,
+            productId,
+            colorId: color,
+            sizeId: size,
+          },
+          transaction,
+        });
         console.log("Cart product destroyed:", cartProduct);
       } else {
         // Otherwise, update the quantity
-        cartProduct.quantity = quantity;
+        const newQuantity = cartProduct.quantity + quantity;
+        cartProduct.quantity += newQuantity;
         await CartProduct.update(
-          { quantity },
+          {
+            quantity: newQuantity,
+          },
           {
             where: {
               userId,
@@ -128,10 +139,17 @@ export const updateCart = async (req, res) => {
     throw error;
   }
 };
-export const ClearCart = async (req, res) => {
+
+// Function to clear the cart for a user
+export const clearCart = async (req, res) => {
   const userId = req.userId;
-  const userCart = await getCart(userId);
-  if (!userCart) throw new ErrorResponse("User not found", 404);
-  await userCart.setCartProducts([]);
-  res.json(cartResponse(await getCart(userId)));
+  try {
+    await CartProduct.destroy({
+      where: { userId },
+    });
+    res.json({ message: "Cart cleared successfully" });
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
 };
