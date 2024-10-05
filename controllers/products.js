@@ -10,12 +10,17 @@ export const getProducts = async (req, res) => {
   const categories = category ? category.split(",") : [];
   const colors = color ? color.split(",") : [];
   const sizes = size ? size.split(",") : [];
+  // Construct the where clause dynamically
+  const whereClause = {};
+  if (categories.length > 0) {
+    whereClause.categoryId = categories;
+  }
+  if (colors.length > 0) {
+    whereClause.defaultColorId = colors;
+  }
 
   const products = await Product.findAll({
-    where: {
-      categoryId: categories.length > 0 ? categories : { [Op.ne]: null },
-      defaultColorId: colors.length > 0 ? colors : { [Op.ne]: null },
-    },
+    where: whereClause,
     attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId"] },
     include: [
       {
@@ -48,6 +53,7 @@ export const getProducts = async (req, res) => {
     order: [[{ model: Size }, "id", "ASC"]],
   });
 
+  console.log("-----Products:", products);
   // Convert products instances to plain JavaScript objects and set the default size to the first size if it doesn't exist
   const productsData = products.map((product) => {
     const productData = product.toJSON();
