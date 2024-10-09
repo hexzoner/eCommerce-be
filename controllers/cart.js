@@ -47,15 +47,14 @@ export const updateCart = async (req, res) => {
   // Check if the product exists
   const product = await Product.findByPk(productId);
   if (!product) throw new ErrorResponse("Product not found", 404);
-
   if (quantity < 0) throw new ErrorResponse("Quantity must be at least 0", 400);
 
   const transaction = await sequelize.transaction();
 
   try {
     // Log the state of the cartProducts table before the update
-    const cartProductsBefore = await CartProduct.findAll({ where: { userId } });
-    console.log("Cart products before update:", JSON.stringify(cartProductsBefore, null, 2));
+    // const cartProductsBefore = await CartProduct.findAll({ where: { userId } });
+    // console.log("Cart products before update:", JSON.stringify(cartProductsBefore, null, 2));
 
     // Find if this exact combination of productId, colorId, and sizeId exists in the cart
     let cartProduct = await CartProduct.findOne({
@@ -69,7 +68,7 @@ export const updateCart = async (req, res) => {
       lock: true, // Lock the row to prevent race conditions
     });
 
-    console.log("Found cartProduct:", cartProduct);
+    // console.log("Found cartProduct:", cartProduct);
 
     if (cartProduct) {
       // If the combination exists, update the quantity
@@ -84,7 +83,7 @@ export const updateCart = async (req, res) => {
           },
           transaction,
         });
-        console.log("Cart product destroyed:", cartProduct);
+        // console.log("Cart product destroyed:", cartProduct);
       } else {
         // Otherwise, update the quantity
         const newQuantity = cartProduct.quantity + quantity;
@@ -103,7 +102,7 @@ export const updateCart = async (req, res) => {
             transaction,
           }
         );
-        console.log("Cart product updated:", cartProduct);
+        // console.log("Cart product updated:", cartProduct);
       }
     } else {
       // If the combination doesn't exist, create a new entry
@@ -118,7 +117,7 @@ export const updateCart = async (req, res) => {
           },
           { transaction }
         );
-        console.log("New cart product created:", newCartProduct);
+        // console.log("New cart product created:", newCartProduct);
       } else {
         throw new ErrorResponse("Quantity must be at least 1", 400);
       }
@@ -128,7 +127,7 @@ export const updateCart = async (req, res) => {
 
     // Log the state of the cartProducts table after the update
     const cartProductsAfter = await CartProduct.findAll({ where: { userId } });
-    console.log("Cart products after update:", JSON.stringify(cartProductsAfter, null, 2));
+    // console.log("Cart products after update:", JSON.stringify(cartProductsAfter, null, 2));
 
     // Return the updated cart
     const userCart = await getCart(userId);
