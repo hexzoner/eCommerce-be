@@ -21,6 +21,7 @@ async function getCart(userId) {
       { model: Color, attributes: ["id", "name"] }, // Include the Color details directly from CartProduct
       { model: Size, attributes: ["id", "name"] }, // Include the Size details directly from CartProduct
     ],
+    order: [[Product, "id", "ASC"]], // Sort by productId in ascending order
   });
 }
 
@@ -47,7 +48,7 @@ export const updateCart = async (req, res) => {
   // Check if the product exists
   const product = await Product.findByPk(productId);
   if (!product) throw new ErrorResponse("Product not found", 404);
-  if (quantity < 0) throw new ErrorResponse("Quantity must be at least 0", 400);
+  // if (quantity < 0) throw new ErrorResponse("Quantity must be at least 0", 400);
 
   const transaction = await sequelize.transaction();
 
@@ -87,7 +88,7 @@ export const updateCart = async (req, res) => {
       } else {
         // Otherwise, update the quantity
         const newQuantity = cartProduct.quantity + quantity;
-        cartProduct.quantity += newQuantity;
+        // cartProduct.quantity += newQuantity;
         await CartProduct.update(
           {
             quantity: newQuantity,
@@ -118,9 +119,7 @@ export const updateCart = async (req, res) => {
           { transaction }
         );
         // console.log("New cart product created:", newCartProduct);
-      } else {
-        throw new ErrorResponse("Quantity must be at least 1", 400);
-      }
+      } else throw new ErrorResponse("Quantity must be at least 1", 400);
     }
 
     await transaction.commit();
@@ -135,7 +134,7 @@ export const updateCart = async (req, res) => {
   } catch (error) {
     await transaction.rollback();
     console.error("Error updating cart:", error);
-    throw error;
+    throw new ErrorResponse("Error updating cart", 500);
   }
 };
 
