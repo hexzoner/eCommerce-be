@@ -53,7 +53,7 @@ export const getProducts = async (req, res) => {
     order: [[{ model: Size }, "id", "ASC"]],
   });
 
-  console.log("-----Products:", products);
+  // console.log("-----Products:", products);
   // Convert products instances to plain JavaScript objects and set the default size to the first size if it doesn't exist
   const productsData = products.map((product) => {
     const productData = product.toJSON();

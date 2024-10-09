@@ -5,7 +5,7 @@ import { ErrorResponse } from "../utils/ErrorResponse.js";
 import sequelize from "../db/index.js";
 
 async function getCart(userId) {
-  console.log("----Getting cart for user:", userId);
+  // console.log("----Getting cart for user:", userId);
   return await CartProduct.findAll({
     where: { userId },
     attributes: ["quantity"], // Include quantity, colorId, and sizeId from the join table
@@ -26,6 +26,11 @@ async function getCart(userId) {
 }
 
 function cartResponse(userCart) {
+  for (let i = 0; i < userCart.length; i++) {
+    const heightWidth = userCart[i].size.name.split("x");
+    if (heightWidth.length === 2) userCart[i].product.price = (userCart[i].product.price * heightWidth[0] * heightWidth[1]).toFixed(2);
+  }
+
   // Calculate the total price
   const totalPrice = userCart.reduce((total, item) => {
     return total + item.product.price * item.quantity;

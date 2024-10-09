@@ -1,4 +1,4 @@
-import { Product, User, Category, Color } from "../db/associations.js";
+import { Product, User, Category, Color, Size } from "../db/associations.js";
 import Wishlist from "../models/wishlist.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
@@ -12,6 +12,7 @@ export const GetWishlist = async (req, res) => {
       include: [
         { model: Category, attributes: ["name"] }, // Include category name
         { model: Color, attributes: ["name"] }, // Include color name
+        { model: Size, attributes: ["name"] }, // Include size name
       ],
     },
   });
