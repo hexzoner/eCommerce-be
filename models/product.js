@@ -14,7 +14,7 @@ const Product = sequelize.define("product", {
     },
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1000),
     allowNull: false,
     unique: false,
     validate: {
