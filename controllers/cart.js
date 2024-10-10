@@ -21,7 +21,11 @@ async function getCart(userId) {
       { model: Color, attributes: ["id", "name"] }, // Include the Color details directly from CartProduct
       { model: Size, attributes: ["id", "name"] }, // Include the Size details directly from CartProduct
     ],
-    order: [[Product, "id", "ASC"]], // Sort by productId in ascending order
+    order: [
+      [Product, "id", "ASC"],
+      ["sizeId", "ASC"],
+      ["colorId", "ASC"],
+    ],
   });
 }
 
@@ -58,7 +62,6 @@ export const updateCart = async (req, res) => {
   const transaction = await sequelize.transaction();
 
   try {
-    // Log the state of the cartProducts table before the update
     // const cartProductsBefore = await CartProduct.findAll({ where: { userId } });
     // console.log("Cart products before update:", JSON.stringify(cartProductsBefore, null, 2));
 
@@ -130,7 +133,7 @@ export const updateCart = async (req, res) => {
     await transaction.commit();
 
     // Log the state of the cartProducts table after the update
-    const cartProductsAfter = await CartProduct.findAll({ where: { userId } });
+    // const cartProductsAfter = await CartProduct.findAll({ where: { userId } });
     // console.log("Cart products after update:", JSON.stringify(cartProductsAfter, null, 2));
 
     // Return the updated cart
