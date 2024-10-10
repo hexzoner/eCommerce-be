@@ -1,6 +1,6 @@
 import { Product, Category, Color, Size } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
-import { Op } from "sequelize";
+// import { Op } from "sequelize";
 
 export const getProducts = async (req, res) => {
   const {

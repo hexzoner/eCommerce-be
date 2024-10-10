@@ -11,6 +11,7 @@ import Wishlist from "../models/wishlist.js";
 import Size from "../models/Size.js";
 import { ProductSize, ProductColor } from "../models/productProps.js";
 import CartProduct from "../models/CartProduct.js";
+import Review from "../models/Review.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
@@ -46,6 +47,9 @@ Product.belongsToMany(Size, { through: ProductSize });
 Size.belongsToMany(Product, { through: ProductSize });
 Product.belongsTo(Size, { as: "defaultSize", foreignKey: "defaultSizeId" });
 Size.hasMany(Product, { as: "defaultForProducts", foreignKey: "defaultSizeId" });
+
+Review.belongsTo(Product, { foreignKey: "productId" });
+Product.hasMany(Review, { foreignKey: "productId" });
 
 sequelize.sync({ alter: true });
 
