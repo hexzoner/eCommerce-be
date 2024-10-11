@@ -21,20 +21,22 @@ export const getReviews = async (req, res) => {
   res.json(reviews);
 };
 
+const getReviewQuery = {
+  attributes: { exclude: ["productId"] },
+  include: [
+    {
+      model: Product,
+      attributes: ["id", "name"],
+    },
+  ],
+};
+
 export const getReviewById = async (req, res) => {
   const {
     params: { id },
   } = req;
 
-  const review = await Review.findByPk(id, {
-    attributes: { exclude: ["productId"] },
-    include: [
-      {
-        model: Product,
-        attributes: ["id", "name"],
-      },
-    ],
-  });
+  const review = await Review.findByPk(id, getReviewQuery);
 
   if (!review) throw new ErrorResponse("Review not found", 404);
 
@@ -61,7 +63,9 @@ export const createReview = async (req, res) => {
     date,
   });
 
-  res.status(201).json(newReview);
+  const populatedReview = await Review.findByPk(newReview.id, getReviewQuery);
+
+  res.status(201).json(populatedReview);
 };
 
 export const updateReview = async (req, res) => {
@@ -83,7 +87,9 @@ export const updateReview = async (req, res) => {
 
   await reviewFound.save();
 
-  res.json(reviewFound);
+  const populatedReview = await Review.findByPk(id, getReviewQuery);
+
+  res.json(populatedReview);
 };
 
 export const deleteReview = async (req, res) => {
