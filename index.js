@@ -10,6 +10,7 @@ import colorRouter from "./routes/colorRoutes.js";
 import wishlistRouter from "./routes/wishlistRoutes.js";
 import sizeRouter from "./routes/sizesRoutes.js";
 import cartRouter from "./routes/cartRoutes.js";
+import reviewRouter from "./routes/reviewRoutes.js";
 
 const app = express();
 export const port = process.env.PORT || 3030;
@@ -26,6 +27,7 @@ app.use("/auth", authRouter);
 app.use("/sizes", sizeRouter);
 app.use("/wishlist", wishlistRouter);
 app.use("/cart", cartRouter);
+app.use("/reviews", reviewRouter);
 
 app.use(errorHandler);
 

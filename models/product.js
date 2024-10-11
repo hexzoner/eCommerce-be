@@ -14,13 +14,50 @@ const Product = sequelize.define("product", {
     },
   },
   description: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(1500),
     allowNull: false,
     unique: false,
+    defaultValue: "No description available",
     validate: {
       len: {
-        args: [1, 1000],
-        msg: "Product description must be between 1 and 1000 characters",
+        args: [1, 1500],
+        msg: "Product description must be between 1 and 1500 characters",
+      },
+    },
+  },
+  details: {
+    type: DataTypes.STRING(2000),
+    allowNull: true,
+    unique: false,
+    defaultValue: "No details available",
+    validate: {
+      len: {
+        args: [1, 2000],
+        msg: "Product details must be between 1 and 2000 characters",
+      },
+    },
+  },
+  notes: {
+    type: DataTypes.STRING(2000),
+    allowNull: true,
+    unique: false,
+    defaultValue: "No notes available",
+    validate: {
+      len: {
+        args: [1, 2000],
+        msg: "Product notes must be between 1 and 2000 characters",
+      },
+    },
+  },
+  instructions: {
+    type: DataTypes.STRING(2000),
+    allowNull: true,
+    unique: false,
+    defaultValue: "No instructions available",
+    validate: {
+      len: {
+        args: [1, 2000],
+        msg: "Product instructions must be between 1 and 2000 characters",
       },
     },
   },
