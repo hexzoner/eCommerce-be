@@ -1,13 +1,35 @@
+import { fn, col } from "sequelize";
 import { Product, User } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import Review from "../models/Review.js";
 
 export const getReviews = async (req, res) => {
   const {
-    query: { page, perPage },
+    query: { page, perPage, rating, sort, productId },
   } = req;
 
+  const offset = page ? (page - 1) * perPage : 0;
+  const limit = perPage ? perPage : 20;
+
+  if (rating) {
+    if (rating < 1 || rating > 5) throw new ErrorResponse("Rating must be between 1 and 5", 400);
+  }
+
+  if (sort) {
+    if (sort !== "asc" && sort !== "desc") throw new ErrorResponse("Sort must be 'asc' or 'desc'", 400);
+  }
+
+  if (productId) {
+    const productExists = await Product.findByPk(productId);
+    if (!productExists) throw new ErrorResponse("Product not found", 404);
+  }
+  const whereQuery = {
+    ...(productId && { productId }),
+    ...(rating && { rating }),
+  };
+
   const reviews = await Review.findAll({
+    where: whereQuery,
     attributes: { exclude: ["productId"] },
     include: [
       {
@@ -15,10 +37,30 @@ export const getReviews = async (req, res) => {
         attributes: ["id", "name"],
       },
     ],
-    order: [["id", "ASC"]],
+    order: [["id", sort ? sort.toUpperCase() : "ASC"]],
+    offset,
+    limit,
   });
 
-  res.json(reviews);
+  const totalReviews = await Review.count({
+    where: whereQuery,
+  });
+
+  const totalPages = Math.ceil(totalReviews / limit);
+
+  // Calculate the average rating
+  const averageRating = await Review.findOne({
+    where: whereQuery,
+    attributes: [[fn("AVG", col("rating")), "averageRating"]],
+    raw: true,
+  });
+
+  res.json({
+    reviews,
+    totalReviews,
+    totalPages,
+    averageRating: averageRating ? parseFloat(averageRating.averageRating).toFixed(2) : null,
+  });
 };
 
 const getReviewQuery = {
