@@ -37,7 +37,7 @@ export const getReviews = async (req, res) => {
         attributes: ["id", "name"],
       },
     ],
-    order: [["id", sort ? sort.toUpperCase() : "ASC"]],
+    order: [["date", sort ? sort.toUpperCase() : "ASC"]],
     offset,
     limit,
   });
