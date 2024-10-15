@@ -5,7 +5,7 @@ import Review from "../models/Review.js";
 
 export const getReviews = async (req, res) => {
   const {
-    query: { page, perPage, rating, sort, productId },
+    query: { page, perPage, rating, sort, productId, sortBy },
   } = req;
 
   const offset = page ? (page - 1) * perPage : 0;
@@ -28,6 +28,10 @@ export const getReviews = async (req, res) => {
     ...(rating && { rating }),
   };
 
+  if (sortBy && sortBy !== "rating" && sortBy !== "date" && sortBy !== "id") {
+    throw new ErrorResponse("SortBy must be 'rating' or 'date' or 'id'", 400);
+  }
+
   const reviews = await Review.findAll({
     where: whereQuery,
     attributes: { exclude: ["productId"] },
@@ -37,7 +41,7 @@ export const getReviews = async (req, res) => {
         attributes: ["id", "name"],
       },
     ],
-    order: [["date", sort ? sort.toUpperCase() : "ASC"]],
+    order: [[sortBy ? sortBy : "id", sort ? sort.toUpperCase() : "DESC"]],
     offset,
     limit,
   });
