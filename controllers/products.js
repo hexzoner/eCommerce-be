@@ -19,6 +19,8 @@ export const getProducts = async (req, res) => {
     whereClause.defaultColorId = colors;
   }
 
+  const offset = page ? (page - 1) * perPage : 0;
+  const limit = perPage ? perPage : 12;
   const products = await Product.findAll({
     where: whereClause,
     attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId"] },
@@ -50,8 +52,16 @@ export const getProducts = async (req, res) => {
         attributes: ["id", "name"],
       },
     ],
-    order: [[{ model: Size }, "id", "ASC"]],
+    order: [["id", "DESC"]],
+    offset,
+    limit,
   });
+
+  const totalProducts = await Product.count({
+    where: whereClause,
+  });
+
+  const totalPages = Math.ceil(totalProducts / limit);
 
   // console.log("-----Products:", products);
   // Convert products instances to plain JavaScript objects and set the default size to the first size if it doesn't exist
@@ -66,7 +76,12 @@ export const getProducts = async (req, res) => {
     return productData;
   });
 
-  res.json(productsData);
+  res.json({
+    results: productsData,
+    totalResults: totalProducts,
+    page,
+    totalPages,
+  });
 };
 
 export const createProduct = async (req, res) => {
