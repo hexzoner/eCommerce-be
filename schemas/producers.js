@@ -8,7 +8,7 @@ const producerSchema = {
   }),
   PUT: Joi.object({
     name: Joi.string().min(2).max(40).optional(),
-    description: Joi.string().min(2).max(255).optional,
+    description: Joi.string().min(2).max(255).optional(),
     image: Joi.string().uri().optional(),
   }),
 };

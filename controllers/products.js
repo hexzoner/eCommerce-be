@@ -1,15 +1,17 @@
-import { Product, Category, Color, Size } from "../db/associations.js";
+import { Product, Category, Color, Size, Producer } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 // import { Op } from "sequelize";
 
 export const getProducts = async (req, res) => {
   const {
-    query: { page, perPage, category, color, size },
+    query: { page, perPage, category, color, size, producer },
   } = req;
 
   const categories = category ? category.split(",") : [];
   const colors = color ? color.split(",") : [];
   const sizes = size ? size.split(",") : [];
+  const producers = producer ? producer.split(",") : [];
+
   // Construct the where clause dynamically
   const whereClause = {};
   if (categories.length > 0) {
@@ -19,14 +21,22 @@ export const getProducts = async (req, res) => {
     whereClause.defaultColorId = colors;
   }
 
+  if (producers.length > 0) {
+    whereClause.producerId = producers;
+  }
+
   const offset = page ? (page - 1) * perPage : 0;
   const limit = perPage ? perPage : 12;
   const products = await Product.findAll({
     where: whereClause,
-    attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId"] },
+    attributes: { exclude: ["categoryId", "producerId", "defaultColorId", "defaultSizeId"] },
     include: [
       {
         model: Category,
+        attributes: ["id", "name"],
+      },
+      {
+        model: Producer,
         attributes: ["id", "name"],
       },
       {
@@ -86,7 +96,7 @@ export const getProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   const product = await Product.create(req.body);
-  const { sizes, defaultSizeId, colors } = req.body;
+  const { sizes, defaultSizeId, colors, producerId } = req.body;
 
   if (sizes) {
     const validSizes = await Size.findAll({ where: { id: sizes } });
@@ -107,6 +117,11 @@ export const createProduct = async (req, res) => {
       throw new ErrorResponse("One or more color IDs are invalid.", 400);
     }
     await product.setColors(colors);
+  }
+
+  if (producerId) {
+    const producer = await Producer.findByPk(producerId);
+    if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
   }
 
   const createdProduct = await Product.findByPk(product.id, {
@@ -132,11 +147,15 @@ export const createProduct = async (req, res) => {
 export const getProductById = async (req, res) => {
   const id = req.params.id;
   const product = await Product.findByPk(id, {
-    attributes: { exclude: ["categoryId", "defaultColorId", "defaultSizeId", "createdAt", "updatedAt"] },
+    attributes: { exclude: ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "createdAt", "updatedAt"] },
     include: [
       {
         model: Category,
         attributes: ["id", "name"],
+      },
+      {
+        model: Producer,
+        attributes: ["id", "name", "image", "description"],
       },
       {
         model: Color,
@@ -184,13 +203,16 @@ export const updateProduct = async (req, res) => {
     params: { id },
   } = req;
 
-  const { sizes, defaultSizeId, colors } = req.body;
+  const { sizes, defaultSizeId, colors, producerId } = req.body;
 
   const product = await Product.findByPk(id, {
-    attributes: { exclude: ["categoryId", "colorId"] },
+    attributes: { exclude: ["categoryId", "colorId", "producerId"] },
     include: [
       {
         model: Category,
+      },
+      {
+        model: Producer,
       },
       {
         model: Color,
@@ -228,14 +250,22 @@ export const updateProduct = async (req, res) => {
     await product.setColors(colors);
   }
 
+  if (producerId) {
+    const producer = await Producer.findByPk(producerId);
+    if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
+  }
+
   await product.update(req.body);
 
   // Fetch the updated product, including associated sizes
   const updatedProduct = await Product.findByPk(id, {
-    attributes: { exclude: ["categoryId", "colorId"] },
+    attributes: { exclude: ["categoryId", "colorId", "producerId", "defaultColorId", "defaultSizeId"] },
     include: [
       {
         model: Category,
+      },
+      {
+        model: Producer,
       },
       {
         model: Color,
