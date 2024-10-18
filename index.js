@@ -11,6 +11,8 @@ import wishlistRouter from "./routes/wishlistRoutes.js";
 import sizeRouter from "./routes/sizesRoutes.js";
 import cartRouter from "./routes/cartRoutes.js";
 import reviewRouter from "./routes/reviewRoutes.js";
+import latestArrivalRouter from "./routes/latestArrivalsRoutes.js";
+import producerRouter from "./routes/producerRoutes.js";
 
 const app = express();
 export const port = process.env.PORT || 3030;
@@ -28,6 +30,8 @@ app.use("/sizes", sizeRouter);
 app.use("/wishlist", wishlistRouter);
 app.use("/cart", cartRouter);
 app.use("/reviews", reviewRouter);
+app.use("/latest", latestArrivalRouter);
+app.use("/producers", producerRouter);
 
 app.use(errorHandler);
 
