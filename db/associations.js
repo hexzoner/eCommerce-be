@@ -52,8 +52,8 @@ Size.hasMany(Product, { as: "defaultForProducts", foreignKey: "defaultSizeId" })
 Review.belongsTo(Product, { foreignKey: "productId" });
 Product.hasMany(Review, { foreignKey: "productId" });
 
-Producer.hasMany(Product, { foreignKey: { name: "producerId", allowNull: true } });
-Product.belongsTo(Producer, { foreignKey: { name: "producerId", allowNull: true } });
+Producer.hasMany(Product, { foreignKey: { name: "producerId", allowNull: false } });
+Product.belongsTo(Producer, { foreignKey: { name: "producerId", allowNull: false } });
 
 sequelize.sync({ alter: true });
 

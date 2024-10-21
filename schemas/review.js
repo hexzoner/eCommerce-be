@@ -10,6 +10,7 @@ const reviewSchema = {
     title: Joi.string().min(1).max(100).required(),
     date: Joi.date().optional(),
     image: Joi.string().optional().allow(""),
+    featured: Joi.boolean().optional(),
   }),
   PUT: Joi.object({
     rating: Joi.number().integer().min(1).max(5).optional(),
@@ -19,6 +20,7 @@ const reviewSchema = {
     image: Joi.string().optional().allow(""),
     date: Joi.date().optional(),
     productId: Joi.number().integer().optional(),
+    featured: Joi.boolean().optional(),
   }),
 };
 

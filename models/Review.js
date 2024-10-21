@@ -54,6 +54,10 @@ const Review = sequelize.define("review", {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,
   },
+  featured: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+  },
 });
 
 export default Review;
