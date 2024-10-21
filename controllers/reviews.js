@@ -117,7 +117,7 @@ export const createReview = async (req, res) => {
 export const updateReview = async (req, res) => {
   const {
     params: { id },
-    body: { rating, review, author, title, image, productId, date },
+    body: { rating, review, author, title, image, productId, date, featured },
   } = req;
 
   const reviewFound = await Review.findByPk(id);
@@ -130,6 +130,7 @@ export const updateReview = async (req, res) => {
   if (image) reviewFound.image = image;
   if (productId) reviewFound.productId = productId;
   if (date) reviewFound.date = date;
+  if (featured) reviewFound.featured = featured;
 
   await reviewFound.save();
 
