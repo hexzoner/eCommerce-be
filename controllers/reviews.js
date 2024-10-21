@@ -32,6 +32,18 @@ export const getReviews = async (req, res) => {
     throw new ErrorResponse("SortBy must be 'rating' or 'date' or 'id'", 400);
   }
 
+  const featuredReviews = await Review.findAll({
+    where: { ...whereQuery, featured: true },
+    attributes: { exclude: ["productId"] },
+    include: [
+      {
+        model: Product,
+        attributes: ["id", "name"],
+      },
+    ],
+    order: [[sortBy ? sortBy : "id", sort ? sort.toUpperCase() : "DESC"]],
+  });
+
   const reviews = await Review.findAll({
     where: whereQuery,
     attributes: { exclude: ["productId"] },
@@ -63,6 +75,7 @@ export const getReviews = async (req, res) => {
     reviews,
     totalReviews,
     totalPages,
+    featuredReviews: featuredReviews,
     averageRating: averageRating ? parseFloat(averageRating.averageRating).toFixed(2) : null,
   });
 };
@@ -130,7 +143,7 @@ export const updateReview = async (req, res) => {
   if (image) reviewFound.image = image;
   if (productId) reviewFound.productId = productId;
   if (date) reviewFound.date = date;
-  if (featured) reviewFound.featured = featured;
+  if (featured === true || featured === false) reviewFound.featured = featured;
 
   await reviewFound.save();
 
