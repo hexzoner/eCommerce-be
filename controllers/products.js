@@ -43,7 +43,19 @@ const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaul
 
 export const getProducts = async (req, res) => {
   const {
-    query: { page, perPage, category, color, size, producer, style },
+    query: {
+      page,
+      perPage,
+      category,
+      color,
+      size,
+      producer,
+      style,
+      shape,
+      technique,
+      material,
+      //search, minPrice, maxPrice, sortBy, order
+    },
   } = req;
 
   const categories = category ? category.split(",") : [];
@@ -51,6 +63,9 @@ export const getProducts = async (req, res) => {
   const sizes = size ? size.split(",") : [];
   const producers = producer ? producer.split(",") : [];
   const styles = style ? style.split(",") : [];
+  const shapes = shape ? shape.split(",") : [];
+  const techniques = technique ? technique.split(",") : [];
+  const materials = material ? material.split(",") : [];
 
   // Construct the where clause dynamically
   const whereClause = {};
@@ -58,6 +73,9 @@ export const getProducts = async (req, res) => {
   if (colors.length > 0) whereClause.defaultColorId = colors;
   if (producers.length > 0) whereClause.producerId = producers;
   if (styles.length > 0) whereClause.styleId = styles;
+  if (shapes.length > 0) whereClause.shapeId = shapes;
+  if (techniques.length > 0) whereClause.techniqueId = techniques;
+  if (materials.length > 0) whereClause.materialId = materials;
 
   const offset = page ? (page - 1) * perPage : 0;
   const limit = perPage ? perPage : 12;
