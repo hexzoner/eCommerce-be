@@ -13,6 +13,10 @@ import { ProductSize, ProductColor } from "../models/productProps.js";
 import CartProduct from "../models/CartProduct.js";
 import Review from "../models/Review.js";
 import Producer from "../models/Producer.js";
+import Style from "../models/Style.js";
+import Shape from "../models/Shape.js";
+import Material from "../models/Material.js";
+import Technique from "../models/Technique.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
@@ -55,6 +59,36 @@ Product.hasMany(Review, { foreignKey: "productId" });
 Producer.hasMany(Product, { foreignKey: { name: "producerId", allowNull: false } });
 Product.belongsTo(Producer, { foreignKey: { name: "producerId", allowNull: false } });
 
+//Taxonomies
+Style.hasMany(Product, { foreignKey: { name: "styleId", allowNull: false } });
+Product.belongsTo(Style, { foreignKey: { name: "styleId", allowNull: false } });
+
+Shape.hasMany(Product, { foreignKey: { name: "shapeId", allowNull: false } });
+Product.belongsTo(Shape, { foreignKey: { name: "shapeId", allowNull: false } });
+
+Material.hasMany(Product, { foreignKey: { name: "materialId", allowNull: false } });
+Product.belongsTo(Material, { foreignKey: { name: "materialId", allowNull: false } });
+
+Technique.hasMany(Product, { foreignKey: { name: "techniqueId", allowNull: false } });
+Product.belongsTo(Technique, { foreignKey: { name: "techniqueId", allowNull: false } });
+
 sequelize.sync({ alter: true });
 
-export { User, Order, Product, Category, Color, OrderProduct, ProductSize, Size, Wishlist, CartProduct, Producer };
+export {
+  User,
+  Order,
+  Product,
+  Category,
+  Color,
+  OrderProduct,
+  ProductSize,
+  Size,
+  Wishlist,
+  CartProduct,
+  Producer,
+  Review,
+  Style,
+  Shape,
+  Material,
+  Technique,
+};
