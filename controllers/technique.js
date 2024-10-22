@@ -48,8 +48,8 @@ export const updateTechnique = async (req, res) => {
   const technique = await Technique.findByPk(id);
   if (!technique) throw new ErrorResponse("Technique not found", 404);
 
-  const techniqueNameExists = await Technique.findOne({ where: { name } });
-  if (techniqueNameExists) throw new ErrorResponse("Technique with this name already exists", 400);
+  // const techniqueNameExists = await Technique.findOne({ where: { name } });
+  // if (techniqueNameExists) throw new ErrorResponse("Technique with this name already exists", 400);
 
   await technique.update(req.body);
   res.json(formatedTechnique(technique));

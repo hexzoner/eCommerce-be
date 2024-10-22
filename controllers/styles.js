@@ -48,8 +48,8 @@ export const updateStyle = async (req, res) => {
   const style = await Style.findByPk(id);
   if (!style) throw new ErrorResponse("Style not found", 404);
 
-  const styleNameExists = await Style.findOne({ where: { name } });
-  if (styleNameExists) throw new ErrorResponse("Style with this name already exists", 400);
+  // const styleNameExists = await Style.findOne({ where: { name } });
+  // if (styleNameExists) throw new ErrorResponse("Style with this name already exists", 400);
 
   await style.update(req.body);
   res.json(formatedStyle(style));

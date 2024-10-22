@@ -48,8 +48,8 @@ export const updateShape = async (req, res) => {
   const shape = await Shape.findByPk(id);
   if (!shape) throw new ErrorResponse("Shape not found", 404);
 
-  const shapeNameExists = await Shape.findOne({ where: { name } });
-  if (shapeNameExists) throw new ErrorResponse("Shape with this name already exists", 400);
+  // const shapeNameExists = await Shape.findOne({ where: { name } });
+  // if (shapeNameExists) throw new ErrorResponse("Shape with this name already exists", 400);
 
   await shape.update(req.body);
   res.json(formatedShape(shape));

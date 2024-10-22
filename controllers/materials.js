@@ -42,17 +42,19 @@ export const getMaterialById = async (req, res) => {
 export const updateMaterial = async (req, res) => {
   const {
     params: { id },
-    body: { name },
+    // body: { name },
   } = req;
 
   const material = await Material.findByPk(id);
   if (!material) throw new ErrorResponse("Material not found", 404);
 
-  const nameExists = await Material.findOne({ where: { name } });
-  if (nameExists) throw new ErrorResponse("Material with this name already exists", 400);
+  // const nameExists = await Material.findOne({
+  //   where: { name, id: { $ne: id } },
+  // });
+  // if (nameExists) throw new ErrorResponse("Material with this name already exists", 400);
 
   await material.update(req.body);
-  res.json(formatedMaterial(material));
+  res.json(material);
 };
 
 export const deleteMaterial = async (req, res) => {

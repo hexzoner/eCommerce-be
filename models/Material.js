@@ -5,22 +5,30 @@ const Material = sequelize.define("material", {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: false,
     validate: {
       len: {
         args: [2, 40],
         msg: "Shape name must be between 2 and 40 characters",
       },
     },
+    // defaultValue: "Material Name",
   },
   image: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(500),
     allowNull: false,
     validate: {
-      isUrl: {
-        msg: "Invalid URL format",
+      len: {
+        args: [1, 500],
+        msg: "Image URL must be between 1 and 500 characters",
       },
     },
+    // validate: {
+    //   isUrl: {
+    //     msg: "Invalid URL format",
+    //   },
+    // },
+    // defaultValue: "https://placehold.co/400",
   },
 });
 

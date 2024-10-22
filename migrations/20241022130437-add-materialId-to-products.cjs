@@ -3,26 +3,38 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up(queryInterface, Sequelize) {
+    // Check if the column already exists
+    const [columns] = await queryInterface.sequelize.query(`
+      SELECT column_name
+      FROM information_schema.columns
+      WHERE table_name = 'products'
+      AND column_name = 'materialId';
+    `);
+
+    if (columns.length > 0) {
+      return;
+    }
+
     // Step 1: Add the new column with a default value
-    await queryInterface.addColumn("products", "shapeId", {
+    await queryInterface.addColumn("products", "materialId", {
       type: Sequelize.INTEGER,
       allowNull: true,
       references: {
-        model: "shapes",
+        model: "materials",
         key: "id",
       },
     });
 
     const [results] = await queryInterface.sequelize.query(`
-      SELECT * FROM shapes WHERE id = 1;
+      SELECT * FROM materials WHERE id = 1;
     `);
 
     if (results.length == 0) {
-      // Insert a default shape(id: 1)
-      await queryInterface.bulkInsert("shapes", [
+      // Insert a default material(id: 1)
+      await queryInterface.bulkInsert("materials", [
         {
           id: 1,
-          name: "Default Shape",
+          name: "Default Material",
           image: "https://placehold.co/400",
           createdAt: new Date(),
           updatedAt: new Date(),
@@ -31,20 +43,20 @@ module.exports = {
     }
 
     // Step 2: Update existing rows to set the default value
-    await queryInterface.sequelize.query('UPDATE products SET "shapeId" = 1 WHERE "shapeId" IS NULL');
+    await queryInterface.sequelize.query('UPDATE products SET "materialId" = 1 WHERE "materialId" IS NULL');
 
     // Step 3: Alter the column to make it non-nullable
-    await queryInterface.changeColumn("products", "shapeId", {
+    await queryInterface.changeColumn("products", "materialId", {
       type: Sequelize.INTEGER,
       allowNull: false,
       references: {
-        model: "styles",
+        model: "materials",
         key: "id",
       },
     });
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.removeColumn("products", "shapeId");
+    await queryInterface.removeColumn("products", "materialId");
   },
 };

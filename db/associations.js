@@ -60,17 +60,17 @@ Producer.hasMany(Product, { foreignKey: { name: "producerId", allowNull: false }
 Product.belongsTo(Producer, { foreignKey: { name: "producerId", allowNull: false } });
 
 //Taxonomies
-Style.hasMany(Product, { foreignKey: { name: "styleId", allowNull: false } });
-Product.belongsTo(Style, { foreignKey: { name: "styleId", allowNull: false } });
+Style.hasMany(Product, { foreignKey: { name: "styleId", allowNull: true } });
+Product.belongsTo(Style, { foreignKey: { name: "styleId", allowNull: true } });
 
-Shape.hasMany(Product, { foreignKey: { name: "shapeId", allowNull: false } });
-Product.belongsTo(Shape, { foreignKey: { name: "shapeId", allowNull: false } });
+Shape.hasMany(Product, { foreignKey: { name: "shapeId", allowNull: true } });
+Product.belongsTo(Shape, { foreignKey: { name: "shapeId", allowNull: true } });
 
-Material.hasMany(Product, { foreignKey: { name: "materialId", allowNull: false } });
-Product.belongsTo(Material, { foreignKey: { name: "materialId", allowNull: false } });
+Material.hasMany(Product, { foreignKey: { name: "materialId", allowNull: true } });
+Product.belongsTo(Material, { foreignKey: { name: "materialId", allowNull: true } });
 
-Technique.hasMany(Product, { foreignKey: { name: "techniqueId", allowNull: false } });
-Product.belongsTo(Technique, { foreignKey: { name: "techniqueId", allowNull: false } });
+Technique.hasMany(Product, { foreignKey: { name: "techniqueId", allowNull: true } });
+Product.belongsTo(Technique, { foreignKey: { name: "techniqueId", allowNull: true } });
 
 sequelize.sync({ alter: true });
 
