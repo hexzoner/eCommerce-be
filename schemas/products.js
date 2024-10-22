@@ -16,6 +16,10 @@ const productSchema = {
     defaultSizeId: Joi.number().integer().required(),
     colors: Joi.array().items(Joi.number().integer()).required(),
     active: Joi.boolean().optional(),
+    styleId: Joi.number().integer().required(),
+    shapeId: Joi.number().integer().required(),
+    techniqueId: Joi.number().integer().required(),
+    materialId: Joi.number().integer().required(),
   }),
   PUT: Joi.object({
     name: Joi.string().min(1).max(100).optional(),
@@ -32,6 +36,10 @@ const productSchema = {
     defaultSizeId: Joi.number().integer().optional(),
     colors: Joi.array().items(Joi.number().integer()).optional(),
     active: Joi.boolean().optional(),
+    styleId: Joi.number().integer().optional(),
+    shapeId: Joi.number().integer().optional(),
+    techniqueId: Joi.number().integer().optional(),
+    materialId: Joi.number().integer().optional(),
   }),
 };
 

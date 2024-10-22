@@ -1,65 +1,77 @@
-import { Product, Category, Color, Size, Producer } from "../db/associations.js";
+import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 // import { Op } from "sequelize";
 
+const includeModels = [
+  {
+    model: Category,
+    attributes: ["id", "name"],
+  },
+  {
+    model: Style,
+    attributes: ["id", "name", "image"],
+  },
+  {
+    model: Shape,
+    attributes: ["id", "name", "image"],
+  },
+  {
+    model: Technique,
+    attributes: ["id", "name", "image"],
+  },
+  {
+    model: Material,
+    attributes: ["id", "name", "image"],
+  },
+  {
+    model: Producer,
+    attributes: ["id", "name", "image", "description"],
+  },
+  {
+    model: Color,
+    as: "defaultColor",
+    attributes: ["id", "name"],
+  },
+  {
+    model: Color,
+    through: { attributes: [] },
+    attributes: ["id", "name"],
+  },
+];
+
+const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "styleId"];
+
 export const getProducts = async (req, res) => {
   const {
-    query: { page, perPage, category, color, size, producer },
+    query: { page, perPage, category, color, size, producer, style },
   } = req;
 
   const categories = category ? category.split(",") : [];
   const colors = color ? color.split(",") : [];
   const sizes = size ? size.split(",") : [];
   const producers = producer ? producer.split(",") : [];
+  const styles = style ? style.split(",") : [];
 
   // Construct the where clause dynamically
   const whereClause = {};
-  if (categories.length > 0) {
-    whereClause.categoryId = categories;
-  }
-  if (colors.length > 0) {
-    whereClause.defaultColorId = colors;
-  }
-
-  if (producers.length > 0) {
-    whereClause.producerId = producers;
-  }
+  if (categories.length > 0) whereClause.categoryId = categories;
+  if (colors.length > 0) whereClause.defaultColorId = colors;
+  if (producers.length > 0) whereClause.producerId = producers;
+  if (styles.length > 0) whereClause.styleId = styles;
 
   const offset = page ? (page - 1) * perPage : 0;
   const limit = perPage ? perPage : 12;
   const products = await Product.findAll({
     where: whereClause,
-    attributes: { exclude: ["categoryId", "producerId", "defaultColorId", "defaultSizeId"] },
+    attributes: { exclude: excludeAttributes },
     include: [
-      {
-        model: Category,
-        attributes: ["id", "name"],
-      },
-      {
-        model: Producer,
-        attributes: ["id", "name"],
-      },
-      {
-        model: Color,
-        as: "defaultColor",
-        attributes: ["id", "name"],
-      },
+      ...includeModels,
       {
         model: Size, // Join the Size table (many-to-many relationship)
         attributes: ["id", "name"],
         through: { attributes: [] }, // Exclude attributes from the join table (ProductSize)
         where: sizes.length > 0 ? { id: sizes } : {}, // Filter sizes if provided
         // required: false, // Include products without sizes (LEFT OUTER JOIN)
-      },
-      {
-        model: Size, // Include the default size (one-to-many relationship)
-        as: "defaultSize",
-        attributes: ["id", "name"],
-      },
-      {
-        model: Color,
-        through: { attributes: [] }, // Exclude attributes from the join table (ProductColor)
-        attributes: ["id", "name"],
       },
     ],
     order: [["id", "DESC"]],
@@ -125,14 +137,11 @@ export const createProduct = async (req, res) => {
   }
 
   const createdProduct = await Product.findByPk(product.id, {
-    attributes: { exclude: ["categoryId", "colorId"] },
+    attributes: {
+      exclude: excludeAttributes,
+    },
     include: [
-      {
-        model: Category,
-      },
-      {
-        model: Color,
-      },
+      ...includeModels,
       {
         model: Size,
         through: { attributes: [] },
@@ -147,26 +156,11 @@ export const createProduct = async (req, res) => {
 export const getProductById = async (req, res) => {
   const id = req.params.id;
   const product = await Product.findByPk(id, {
-    attributes: { exclude: ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "createdAt", "updatedAt"] },
+    attributes: {
+      exclude: excludeAttributes,
+    },
     include: [
-      {
-        model: Category,
-        attributes: ["id", "name"],
-      },
-      {
-        model: Producer,
-        attributes: ["id", "name", "image", "description"],
-      },
-      {
-        model: Color,
-        as: "defaultColor",
-        attributes: ["id", "name"],
-      },
-      {
-        model: Color,
-        through: { attributes: [] },
-        attributes: ["id", "name"],
-      },
+      ...includeModels,
       {
         model: Size, // Include the default size (one-to-many relationship)
         as: "defaultSize",
@@ -206,17 +200,9 @@ export const updateProduct = async (req, res) => {
   const { sizes, defaultSizeId, colors, producerId } = req.body;
 
   const product = await Product.findByPk(id, {
-    attributes: { exclude: ["categoryId", "colorId", "producerId"] },
+    attributes: { exclude: excludeAttributes },
     include: [
-      {
-        model: Category,
-      },
-      {
-        model: Producer,
-      },
-      {
-        model: Color,
-      },
+      ...includeModels,
       {
         model: Size,
         through: { attributes: [] },
@@ -259,17 +245,9 @@ export const updateProduct = async (req, res) => {
 
   // Fetch the updated product, including associated sizes
   const updatedProduct = await Product.findByPk(id, {
-    attributes: { exclude: ["categoryId", "colorId", "producerId", "defaultColorId", "defaultSizeId"] },
+    attributes: { exclude: excludeAttributes },
     include: [
-      {
-        model: Category,
-      },
-      {
-        model: Producer,
-      },
-      {
-        model: Color,
-      },
+      ...includeModels,
       {
         model: Size,
         through: { attributes: [] }, // Exclude junction table attributes
