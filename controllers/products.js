@@ -43,21 +43,6 @@ const includeModels = [
     as: "defaultSize",
     attributes: ["id", "name"],
   },
-  // {
-  //   model: Size,
-  //   through: { attributes: [] },
-  //   attributes: ["id", "name"],
-  // },
-  {
-    model: Feature,
-    through: { attributes: [] },
-    attributes: ["id", "name", "image"],
-  },
-  {
-    model: Room,
-    through: { attributes: [] },
-    attributes: ["id", "name", "image"],
-  },
 ];
 
 const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "styleId"];
@@ -101,8 +86,8 @@ export const getProducts = async (req, res) => {
   if (shapes.length > 0) whereClause.shapeId = shapes;
   if (techniques.length > 0) whereClause.techniqueId = techniques;
   if (materials.length > 0) whereClause.materialId = materials;
-  if (rooms.length > 0) whereClause.roomId = rooms;
-  if (features.length > 0) whereClause.featureId = features;
+  // if (rooms.length > 0) whereClause.roomId = rooms;
+  // if (features.length > 0) whereClause.featureId = features;
   // if (sizes.length > 0) whereClause.sizeId = sizes;
 
   const offset = page ? (page - 1) * perPage : 0;
@@ -122,18 +107,18 @@ export const getProducts = async (req, res) => {
         where: sizes.length > 0 ? { id: sizes } : {}, // Filter sizes if provided
         // required: false, // Include products without sizes (LEFT OUTER JOIN)
       },
-      // {
-      //   model: Room,
-      //   through: { attributes: [] },
-      //   attributes: ["id", "name", "image"],
-      //   where: rooms.length > 0 ? { id: rooms } : {},
-      // },
-      // {
-      //   model: Feature,
-      //   through: { attributes: [] },
-      //   attributes: ["id", "name", "image"],
-      //   where: features.length > 0 ? { id: features } : {},
-      // },
+      {
+        model: Feature,
+        attributes: ["id", "name", "image"],
+        through: { attributes: [] },
+        where: features.length > 0 ? { id: features } : {},
+      },
+      {
+        model: Room,
+        attributes: ["id", "name", "image"],
+        through: { attributes: [] },
+        where: rooms.length > 0 ? { id: rooms } : {},
+      },
     ],
     order: [["id", "DESC"]],
     offset,
