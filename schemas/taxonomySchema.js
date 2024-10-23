@@ -1,6 +1,6 @@
 import Joi from "joi";
 
-const techniqueSchema = {
+const taxonomySchema = {
   POST: Joi.object({
     name: Joi.string().min(2).max(40).required(),
     image: Joi.string().required(),
@@ -11,4 +11,4 @@ const techniqueSchema = {
   }),
 };
 
-export default techniqueSchema;
+export default taxonomySchema;

@@ -17,6 +17,8 @@ import Style from "../models/Style.js";
 import Shape from "../models/Shape.js";
 import Material from "../models/Material.js";
 import Technique from "../models/Technique.js";
+import Room from "../models/Room.js";
+import Feature from "../models/Feature.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
@@ -72,6 +74,12 @@ Product.belongsTo(Material, { foreignKey: { name: "materialId", allowNull: true 
 Technique.hasMany(Product, { foreignKey: { name: "techniqueId", allowNull: true } });
 Product.belongsTo(Technique, { foreignKey: { name: "techniqueId", allowNull: true } });
 
+Feature.hasMany(Product, { foreignKey: { name: "featureId", allowNull: true } });
+Product.belongsTo(Feature, { foreignKey: { name: "featureId", allowNull: true } });
+
+Room.hasMany(Product, { foreignKey: { name: "roomId", allowNull: true } });
+Product.belongsTo(Room, { foreignKey: { name: "roomId", allowNull: true } });
+
 sequelize.sync({ alter: true });
 
 export {
@@ -91,4 +99,6 @@ export {
   Shape,
   Material,
   Technique,
+  Room,
+  Feature,
 };

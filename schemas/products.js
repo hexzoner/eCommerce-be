@@ -20,6 +20,7 @@ const productSchema = {
     shapeId: Joi.number().integer().required(),
     techniqueId: Joi.number().integer().required(),
     materialId: Joi.number().integer().required(),
+    rooms: Joi.string().min(1).max(100).required(),
   }),
   PUT: Joi.object({
     name: Joi.string().min(1).max(100).optional(),
@@ -40,6 +41,7 @@ const productSchema = {
     shapeId: Joi.number().integer().optional(),
     techniqueId: Joi.number().integer().optional(),
     materialId: Joi.number().integer().optional(),
+    rooms: Joi.string().min(1).max(100).optional(),
   }),
 };
 

@@ -17,6 +17,8 @@ import shapeRouter from "./routes/shapesRoutes.js";
 import materialRouter from "./routes/materialRoutes.js";
 import techniqueRouter from "./routes/techniqueRoutes.js";
 import styleRouter from "./routes/stylesRoutes.js";
+import featureRouter from "./routes/featureRoutes.js";
+import roomRouter from "./routes/roomRoutes.js";
 
 const app = express();
 export const port = process.env.PORT || 3030;
@@ -40,6 +42,8 @@ app.use("/shapes", shapeRouter);
 app.use("/materials", materialRouter);
 app.use("/techniques", techniqueRouter);
 app.use("/styles", styleRouter);
+app.use("/features", featureRouter);
+app.use("/rooms", roomRouter);
 
 app.use(errorHandler);
 
