@@ -9,7 +9,7 @@ import Color from "../models/Color.js";
 import { OrderProduct } from "../models/orderProduct.js";
 import Wishlist from "../models/wishlist.js";
 import Size from "../models/Size.js";
-import { ProductSize, ProductColor } from "../models/productProps.js";
+import { ProductSize, ProductColor, ProductFeature, ProductRoom } from "../models/productProps.js";
 import CartProduct from "../models/CartProduct.js";
 import Review from "../models/Review.js";
 import Producer from "../models/Producer.js";
@@ -74,11 +74,11 @@ Product.belongsTo(Material, { foreignKey: { name: "materialId", allowNull: true 
 Technique.hasMany(Product, { foreignKey: { name: "techniqueId", allowNull: true } });
 Product.belongsTo(Technique, { foreignKey: { name: "techniqueId", allowNull: true } });
 
-Feature.hasMany(Product, { foreignKey: { name: "featureId", allowNull: true } });
-Product.belongsTo(Feature, { foreignKey: { name: "featureId", allowNull: true } });
+Product.belongsToMany(Room, { through: ProductRoom });
+Room.belongsToMany(Product, { through: ProductRoom });
 
-Room.hasMany(Product, { foreignKey: { name: "roomId", allowNull: true } });
-Product.belongsTo(Room, { foreignKey: { name: "roomId", allowNull: true } });
+Product.belongsToMany(Feature, { through: ProductFeature });
+Feature.belongsToMany(Product, { through: ProductFeature });
 
 sequelize.sync({ alter: true });
 
