@@ -68,6 +68,8 @@ export const getProducts = async (req, res) => {
       room,
       feature,
       //search, minPrice, maxPrice, sortBy, order
+      isNew,
+      isBestSeller,
     },
   } = req;
 
@@ -91,6 +93,8 @@ export const getProducts = async (req, res) => {
   if (shapes.length > 0) whereClause.shapeId = shapes;
   if (techniques.length > 0) whereClause.techniqueId = techniques;
   if (materials.length > 0) whereClause.materialId = materials;
+  if (isNew != undefined) whereClause.new = isNew;
+  if (isBestSeller != undefined) whereClause.bestSeller = isBestSeller;
   // if (rooms.length > 0) whereClause.roomId = rooms;
   // if (features.length > 0) whereClause.featureId = features;
   // if (sizes.length > 0) whereClause.sizeId = sizes;
