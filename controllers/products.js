@@ -136,6 +136,27 @@ export const getProducts = async (req, res) => {
 
   const totalProducts = await Product.count({
     where: whereClause,
+    include: [
+      {
+        model: Size,
+        attributes: [], // No need for attributes in count query
+        through: { attributes: [] }, // Exclude join table attributes
+        where: sizes.length > 0 ? { id: sizes } : {},
+      },
+      {
+        model: Feature,
+        attributes: [],
+        through: { attributes: [] },
+        where: features.length > 0 ? { id: features } : {},
+      },
+      {
+        model: Room,
+        attributes: [],
+        through: { attributes: [] },
+        where: rooms.length > 0 ? { id: rooms } : {},
+      },
+    ],
+    distinct: true, // Ensure that we count distinct products
   });
 
   const totalPages = Math.ceil(totalProducts / limit);
