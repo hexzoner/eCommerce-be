@@ -5,6 +5,7 @@ function formatedCategory(category) {
   return {
     id: category.id,
     name: category.name,
+    image: category.image,
   };
 }
 

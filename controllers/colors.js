@@ -5,6 +5,7 @@ function formatedColor(color) {
   return {
     id: color.id,
     name: color.name,
+    image: color.image,
   };
 }
 

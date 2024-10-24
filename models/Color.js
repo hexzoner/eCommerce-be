@@ -13,6 +13,22 @@ const Color = sequelize.define("color", {
       },
     },
   },
+  image: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    validate: {
+      len: {
+        args: [1, 500],
+        msg: "Image URL must be between 1 and 500 characters",
+      },
+    },
+    // validate: {
+    //   isUrl: {
+    //     msg: "Invalid URL format",
+    //   },
+    // },
+    // defaultValue: "https://placehold.co/400",
+  },
 });
 
 export default Color;
