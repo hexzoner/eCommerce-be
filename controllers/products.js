@@ -43,9 +43,14 @@ const includeModels = [
     as: "defaultSize",
     attributes: ["id", "name"],
   },
+  {
+    model: Feature,
+    through: { attributes: [] },
+  },
+  { model: Room, through: { attributes: [] } },
 ];
 
-const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "styleId"];
+const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "styleId", "shapeId", "techniqueId", "materialId"];
 
 export const getProducts = async (req, res) => {
   const {

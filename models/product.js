@@ -80,6 +80,18 @@ const Product = sequelize.define("product", {
     unique: false,
     defaultValue: true,
   },
+  new: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    unique: false,
+    defaultValue: false,
+  },
+  bestSeller: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    unique: false,
+    defaultValue: false,
+  },
 });
 
 export default Product;
