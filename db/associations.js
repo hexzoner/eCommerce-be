@@ -19,6 +19,7 @@ import Material from "../models/Material.js";
 import Technique from "../models/Technique.js";
 import Room from "../models/Room.js";
 import Feature from "../models/Feature.js";
+import { ProductPattern } from "../models/ProductPattern.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
@@ -35,6 +36,9 @@ Product.belongsToMany(Order, { through: OrderProduct });
 //------------------
 User.belongsToMany(Product, { through: CartProduct, as: "CartProducts" });
 Product.belongsToMany(User, { through: CartProduct, as: "CartProducts" });
+
+Product.hasMany(ProductPattern, { foreignKey: "productId" });
+ProductPattern.belongsTo(Product, { foreignKey: "productId" });
 
 // Ensure CartProduct is associated with Color and Size
 CartProduct.belongsTo(Product, { foreignKey: "productId" });
@@ -101,4 +105,5 @@ export {
   Technique,
   Room,
   Feature,
+  ProductPattern,
 };

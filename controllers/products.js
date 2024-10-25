@@ -1,5 +1,5 @@
-import { where } from "sequelize";
-import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature } from "../db/associations.js";
+// import { where } from "sequelize";
+import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature, ProductPattern } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 // import { Op } from "sequelize";
 
@@ -48,6 +48,7 @@ const includeModels = [
     through: { attributes: [] },
   },
   { model: Room, through: { attributes: [] } },
+  { model: ProductPattern, attributes: ["id", "name", "image"] },
 ];
 
 const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "styleId", "shapeId", "techniqueId", "materialId"];
