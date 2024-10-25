@@ -9,10 +9,16 @@ import Color from "../models/Color.js";
 import { OrderProduct } from "../models/orderProduct.js";
 import Wishlist from "../models/wishlist.js";
 import Size from "../models/Size.js";
-import { ProductSize, ProductColor } from "../models/productProps.js";
+import { ProductSize, ProductColor, ProductFeature, ProductRoom } from "../models/productProps.js";
 import CartProduct from "../models/CartProduct.js";
 import Review from "../models/Review.js";
 import Producer from "../models/Producer.js";
+import Style from "../models/Style.js";
+import Shape from "../models/Shape.js";
+import Material from "../models/Material.js";
+import Technique from "../models/Technique.js";
+import Room from "../models/Room.js";
+import Feature from "../models/Feature.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
@@ -55,6 +61,44 @@ Product.hasMany(Review, { foreignKey: "productId" });
 Producer.hasMany(Product, { foreignKey: { name: "producerId", allowNull: false } });
 Product.belongsTo(Producer, { foreignKey: { name: "producerId", allowNull: false } });
 
+//Taxonomies
+Style.hasMany(Product, { foreignKey: { name: "styleId", allowNull: true } });
+Product.belongsTo(Style, { foreignKey: { name: "styleId", allowNull: true } });
+
+Shape.hasMany(Product, { foreignKey: { name: "shapeId", allowNull: true } });
+Product.belongsTo(Shape, { foreignKey: { name: "shapeId", allowNull: true } });
+
+Material.hasMany(Product, { foreignKey: { name: "materialId", allowNull: true } });
+Product.belongsTo(Material, { foreignKey: { name: "materialId", allowNull: true } });
+
+Technique.hasMany(Product, { foreignKey: { name: "techniqueId", allowNull: true } });
+Product.belongsTo(Technique, { foreignKey: { name: "techniqueId", allowNull: true } });
+
+Product.belongsToMany(Room, { through: ProductRoom });
+Room.belongsToMany(Product, { through: ProductRoom });
+
+Product.belongsToMany(Feature, { through: ProductFeature });
+Feature.belongsToMany(Product, { through: ProductFeature });
+
 sequelize.sync({ alter: true });
 
-export { User, Order, Product, Category, Color, OrderProduct, ProductSize, Size, Wishlist, CartProduct, Producer };
+export {
+  User,
+  Order,
+  Product,
+  Category,
+  Color,
+  OrderProduct,
+  ProductSize,
+  Size,
+  Wishlist,
+  CartProduct,
+  Producer,
+  Review,
+  Style,
+  Shape,
+  Material,
+  Technique,
+  Room,
+  Feature,
+};

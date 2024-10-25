@@ -13,6 +13,16 @@ const Category = sequelize.define("category", {
       },
     },
   },
+  image: {
+    type: DataTypes.STRING(500),
+    allowNull: true,
+    validate: {
+      len: {
+        args: [1, 500],
+        msg: "Image URL must be between 1 and 500 characters",
+      },
+    },
+  },
 });
 
 export default Category;

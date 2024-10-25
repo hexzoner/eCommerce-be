@@ -1,21 +1,22 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/index.js";
 
-const Color = sequelize.define("color", {
+const Material = sequelize.define("material", {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
-    unique: true,
+    unique: false,
     validate: {
       len: {
         args: [2, 40],
-        msg: "Color must be between 2 and 40 characters",
+        msg: "Shape name must be between 2 and 40 characters",
       },
     },
+    // defaultValue: "Material Name",
   },
   image: {
     type: DataTypes.STRING(500),
-    allowNull: true,
+    allowNull: false,
     validate: {
       len: {
         args: [1, 500],
@@ -31,4 +32,4 @@ const Color = sequelize.define("color", {
   },
 });
 
-export default Color;
+export default Material;
