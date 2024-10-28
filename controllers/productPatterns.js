@@ -1,32 +1,53 @@
-import { Product, ProductPattern } from "../db/associations.js";
+import { Product, ProductPattern, Pattern, Image } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
 export const getProductPatterns = async (req, res) => {
   const {
-    query: { productId, name },
+    query: { productId },
   } = req;
 
   const productExists = await Product.findByPk(productId);
   if (!productExists) throw new ErrorResponse("Product not found", 404);
 
-  const productPatterns = await ProductPattern.findAll({
-    where: { productId, name },
-    order: [["name", "ASC"]],
+  const productPatterns = await Pattern.findAll({
+    where: { productId },
+    include: [
+      {
+        model: Product,
+        attributes: [],
+      },
+      {
+        model: Image,
+        attributes: ["imageURL"],
+      },
+    ],
+    attributes: { exclude: ["createdAt", "updatedAt", "productId"] },
   });
 
-  res.json(productPatterns);
+  res.json({
+    status: "success",
+    results: productPatterns,
+  });
 };
 
 export const createProductPattern = async (req, res) => {
-  const { productId } = req.query;
-  const { name, image } = req.body;
+  const { name, icon, images, productId } = req.body;
 
   const productExists = await Product.findByPk(productId);
   if (!productExists) throw new ErrorResponse("Product not found", 404);
 
-  const productPattern = await ProductPattern.create({ name, image, productId });
+  const pattern = await Pattern.create(req.body);
 
-  res.status(201).json(productPattern);
+  if (!images) throw new ErrorResponse("At least one image is required", 400);
+
+  // Create images for the pattern
+  if (images) {
+    for (const img of images) {
+      await Image.create({ imageURL: img, patternId: pattern.id });
+    }
+  }
+
+  res.status(201).json(pattern);
 };
 
 export const updateProductPattern = async (req, res) => {
