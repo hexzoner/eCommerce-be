@@ -10,7 +10,8 @@ const sequelize = new Sequelize(process.env.PG_URI, {
   },
 });
 
-await sequelize.query('ALTER TABLE "productPatterns" DROP CONSTRAINT IF EXISTS "productPatterns_name_key7"');
+// await sequelize.query('ALTER TABLE "productPatterns" DROP CONSTRAINT IF EXISTS "productPatterns_name_key7"');
+// sequelize.query('DELETE FROM "images" WHERE "patternId" IS NULL;');
 // await sequelize.query('ALTER TABLE "cartProducts" ADD CONSTRAINT "cartProducts_pkey" PRIMARY KEY ("productId", "userId", "colorId", "sizeId")');
 // UPDATE products SET producerId = 1 WHERE producerId IS NULL;
 // await sequelize.query('UPDATE "products" SET "producerId" = 1 WHERE "producerId" IS NULL');

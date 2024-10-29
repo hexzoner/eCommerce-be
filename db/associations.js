@@ -19,7 +19,7 @@ import Material from "../models/Material.js";
 import Technique from "../models/Technique.js";
 import Room from "../models/Room.js";
 import Feature from "../models/Feature.js";
-import { ProductPattern } from "../models/ProductPattern.js";
+// import { ProductPattern } from "../models/ProductPattern.js";
 import { Image, PatternImage, Pattern } from "../models/Pattern.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
@@ -40,8 +40,8 @@ Product.belongsToMany(User, { through: CartProduct, as: "CartProducts" });
 
 // Product.hasMany(ProductPattern, { foreignKey: "productId" });
 // ProductPattern.belongsTo(Product, { foreignKey: "productId" });
-Product.belongsToMany(Pattern, { through: ProductPattern });
-Pattern.belongsToMany(Product, { through: ProductPattern });
+// Product.belongsToMany(Pattern, { through: ProductPattern });
+// Pattern.belongsToMany(Product, { through: ProductPattern });
 Product.belongsTo(Pattern, { as: "mainPattern", foreignKey: "mainPatternId" });
 Pattern.hasMany(Product, { as: "mainForProducts", foreignKey: "mainPatternId" });
 
@@ -116,7 +116,7 @@ export {
   Technique,
   Room,
   Feature,
-  ProductPattern,
+  // ProductPattern,
   Image,
   Pattern,
   PatternImage,

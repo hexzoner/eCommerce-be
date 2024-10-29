@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getProductPatterns, createProductPattern, updateProductPattern, deleteProductPattern } from "../controllers/productPatterns.js";
+import { getProductPatterns, createProductPattern, updateProductPattern, deleteProductPattern } from "../controllers/patterns.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import validate from "../middleware/validate.js";
 import authorize from "../middleware/authorize.js";
@@ -15,6 +15,7 @@ productPatternRouter
 
 productPatternRouter
   .route("/:id")
+  .get(asyncHandler(getProductPatterns))
   .put(verifyTokenMiddleware, authorize("admin"), validate(patternSchema.PUT), asyncHandler(updateProductPattern))
   .delete(verifyTokenMiddleware, authorize("admin"), asyncHandler(deleteProductPattern));
 
