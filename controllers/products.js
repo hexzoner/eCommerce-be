@@ -1,5 +1,5 @@
 // import { where } from "sequelize";
-import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature, Pattern } from "../db/associations.js";
+import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature, Pattern, Image } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 // import { Op } from "sequelize";
 
@@ -50,7 +50,13 @@ const includeModels = [
   { model: Room, through: { attributes: [] } },
   {
     model: Pattern,
-    attributes: ["id", "name", "icon"],
+    attributes: ["id", "name", "icon", "active"],
+    include: [
+      {
+        model: Image,
+        attributes: ["id", "imageURL"],
+      },
+    ],
   },
 ];
 
@@ -265,7 +271,7 @@ export const updateProduct = async (req, res) => {
     params: { id },
   } = req;
 
-  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId, patterns } = req.body;
 
   const product = await Product.findByPk(id, {
     attributes: { exclude: excludeAttributes },
@@ -293,7 +299,7 @@ export const updateProduct = async (req, res) => {
     if (!pattern) throw new ErrorResponse("Main pattern ID is invalid.", 400);
 
     if (!product.patterns.map((p) => p.id).includes(mainPatternId))
-      throw new ErrorResponse("Default pattern ID must be one of the product's sizes.", 400);
+      throw new ErrorResponse("Default pattern ID must be one of the product's patterns.", 400);
 
     await product.setMainPattern(pattern);
   }
@@ -333,6 +339,44 @@ export const updateProduct = async (req, res) => {
   if (producerId) {
     const producer = await Producer.findByPk(producerId);
     if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
+  }
+
+  if (patterns) {
+    // Create or Update patterns in the database
+    for (const pattern of patterns) {
+      const patternExists = await Pattern.findByPk(pattern.id);
+
+      // If the pattern does not exist, create it
+      if (!patternExists) {
+        const newPattern = await Pattern.create(pattern);
+        await product.addPattern(newPattern);
+
+        // Save associated images
+        if (pattern.images) {
+          const imagePromises = pattern.images.map(async (image) => {
+            return await Image.create({ imageURL: image.imageURL, patternId: newPattern.id });
+          });
+          await Promise.all(imagePromises); // Wait for all images to be saved
+        }
+      } else {
+        // If the pattern exists, update it
+        await patternExists.update(pattern);
+
+        // Handle images (update or create)
+        if (pattern.images) {
+          // Clear existing images associated with the pattern before adding new ones
+          await Image.destroy({ where: { patternId: patternExists.id } });
+
+          const imagePromises = pattern.images.map(async (image) => {
+            return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
+          });
+          await Promise.all(imagePromises); // Wait for all images to be saved
+        }
+      }
+    }
+
+    // Optionally, set patterns to the product (if you want to ensure only the given patterns are associated)
+    await product.setPatterns(patterns.map((p) => p.id)); // Set only the current patterns
   }
 
   await product.update(req.body);

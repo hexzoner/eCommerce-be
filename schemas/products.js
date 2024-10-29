@@ -25,6 +25,7 @@ const productSchema = {
     new: Joi.boolean().optional(),
     bestSeller: Joi.boolean().optional(),
     mainPatternId: Joi.number().integer().required(),
+    patterns: Joi.array().items().required(),
   }),
   PUT: Joi.object({
     name: Joi.string().min(1).max(100).optional(),
@@ -50,6 +51,7 @@ const productSchema = {
     new: Joi.boolean().optional(),
     bestSeller: Joi.boolean().optional(),
     mainPatternId: Joi.number().integer().optional(),
+    patterns: Joi.array().items().optional(),
   }),
 };
 
