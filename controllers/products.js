@@ -1,5 +1,5 @@
 // import { where } from "sequelize";
-import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature } from "../db/associations.js";
+import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature, Pattern } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 // import { Op } from "sequelize";
 
@@ -48,7 +48,10 @@ const includeModels = [
     through: { attributes: [] },
   },
   { model: Room, through: { attributes: [] } },
-  // { model: ProductPattern, attributes: ["id", "name", "image"] },
+  {
+    model: Pattern,
+    attributes: ["id", "name", "icon"],
+  },
 ];
 
 const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "styleId", "shapeId", "techniqueId", "materialId"];
@@ -262,7 +265,7 @@ export const updateProduct = async (req, res) => {
     params: { id },
   } = req;
 
-  const { sizes, defaultSizeId, colors, producerId, rooms, features } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId } = req.body;
 
   const product = await Product.findByPk(id, {
     attributes: { exclude: excludeAttributes },
@@ -283,6 +286,16 @@ export const updateProduct = async (req, res) => {
     // if (!product.sizes.map((size) => size.id).includes(defaultSizeId)) {
     //   throw new ErrorResponse("Default size ID must be one of the product's sizes.", 400);
     // }
+  }
+
+  if (mainPatternId) {
+    const pattern = await Pattern.findByPk(mainPatternId);
+    if (!pattern) throw new ErrorResponse("Main pattern ID is invalid.", 400);
+
+    if (!product.patterns.map((p) => p.id).includes(mainPatternId))
+      throw new ErrorResponse("Default pattern ID must be one of the product's sizes.", 400);
+
+    await product.setMainPattern(pattern);
   }
 
   if (sizes) {
