@@ -50,8 +50,24 @@ export async function uploadImageS3(req, res, next) {
   }
 }
 
+export const deleteImageFromS3 = async (imageUrl) => {
+  // Extract the file name from the URL
+  const urlParts = imageUrl.split("/");
+  const fileName = urlParts[urlParts.length - 1].split("?")[0]; // Get the filename only
+
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME,
+    Key: `patterns/${fileName}`, // Adjust the path if necessary
+  };
+
+  try {
+    await s3.send(new DeleteObjectCommand(params));
+    console.log(`Successfully deleted ${imageUrl} from S3`);
+  } catch (error) {
+    console.error("Error deleting image from S3:", error);
+  }
+};
+
 S3Router.route("/").post(uploadImageS3);
 
 export default S3Router;
-//       const deleteCommand = new DeleteObjectCommand(deleteParams);
-//       await s3.send(deleteCommand);

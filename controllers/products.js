@@ -1,6 +1,7 @@
 // import { where } from "sequelize";
 import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature, Pattern, Image } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
+import { deleteImageFromS3 } from "../images-upload/upload-image-s3.js";
 // import { Op } from "sequelize";
 
 const includeModels = [
@@ -360,18 +361,29 @@ export const updateProduct = async (req, res) => {
         }
       } else {
         // If the pattern exists, update it
-        await patternExists.update(pattern);
+
+        // delete existing images from S3 with the pattern before adding new ones
+
+        const oldIconUrl = patternExists.icon;
+        if (oldIconUrl && oldIconUrl !== pattern.icon) await deleteImageFromS3(oldIconUrl); // Delete old icon from S3
 
         // Handle images (update or create)
         if (pattern.images) {
           // Clear existing images associated with the pattern before adding new ones
+
+          const imagesToDelete = await Image.findAll({ where: { patternId: patternExists.id } });
           await Image.destroy({ where: { patternId: patternExists.id } });
+
+          for (const img of imagesToDelete) {
+            await deleteImageFromS3(img.imageURL); // Delete from S3
+          }
 
           const imagePromises = pattern.images.map(async (image) => {
             return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
           });
           await Promise.all(imagePromises); // Wait for all images to be saved
         }
+        await patternExists.update(pattern);
       }
     }
 
