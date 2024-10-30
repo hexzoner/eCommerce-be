@@ -5,14 +5,14 @@ const getPatternQueryOptions = {
   include: [
     {
       model: Image,
-      attributes: ["id", "imageURL"],
+      attributes: ["id", "imageURL", "order"],
     },
   ],
   attributes: { exclude: ["createdAt", "updatedAt", "productId"] },
-  order: [
-    ["id", "ASC"],
-    [Image, "id", "ASC"],
-  ],
+  // order: [
+  //   ["id", "ASC"],
+  //   [Image, "order", "ASC"],
+  // ],
 };
 
 export const getProductPatterns = async (req, res) => {
@@ -26,6 +26,7 @@ export const getProductPatterns = async (req, res) => {
   const productPatterns = await Pattern.findAll({
     ...getPatternQueryOptions,
     where: { productId: id },
+    order: [["order", "ASC"]],
   });
 
   const allImages = await Image.findAll();

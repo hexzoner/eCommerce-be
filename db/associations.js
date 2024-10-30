@@ -20,7 +20,7 @@ import Technique from "../models/Technique.js";
 import Room from "../models/Room.js";
 import Feature from "../models/Feature.js";
 // import { ProductPattern } from "../models/ProductPattern.js";
-import { Image, PatternImage, Pattern } from "../models/Pattern.js";
+import { Image, Pattern } from "../models/Pattern.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
@@ -119,5 +119,5 @@ export {
   // ProductPattern,
   Image,
   Pattern,
-  PatternImage,
+  // PatternImage,
 };

@@ -55,10 +55,11 @@ const includeModels = [
     include: [
       {
         model: Image,
-        attributes: ["id", "imageURL"],
+        attributes: ["id", "imageURL", "order"],
+        separate: true,
+        order: [["order", "ASC"]],
       },
     ],
-    order: [["order", "ASC"]],
   },
 ];
 
@@ -140,7 +141,10 @@ export const getProducts = async (req, res) => {
         where: rooms.length > 0 ? { id: rooms } : {},
       },
     ],
-    order: [["id", "DESC"]],
+    order: [
+      [Pattern, "order", "ASC"],
+      ["id", "DESC"],
+    ],
     offset,
     limit,
   });
@@ -387,6 +391,12 @@ export const updateProduct = async (req, res) => {
           return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
         });
         await Promise.all(imagePromises); // Wait for all new images to be saved
+
+        //Update the pattern images order
+        for (const img of pattern.images) {
+          const imageToUpdate = await Image.findOne({ where: { patternId: patternExists.id, id: img.id } });
+          if (imageToUpdate) await imageToUpdate.update({ order: img.order });
+        }
 
         // Update the pattern itself
         await patternExists.update(pattern);
