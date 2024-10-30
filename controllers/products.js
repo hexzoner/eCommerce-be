@@ -51,13 +51,14 @@ const includeModels = [
   { model: Room, through: { attributes: [] } },
   {
     model: Pattern,
-    attributes: ["id", "name", "icon", "active"],
+    attributes: ["id", "name", "icon", "active", "order"],
     include: [
       {
         model: Image,
         attributes: ["id", "imageURL"],
       },
     ],
+    order: [["order", "ASC"]],
   },
 ];
 
@@ -116,7 +117,6 @@ export const getProducts = async (req, res) => {
   const products = await Product.findAll({
     where: whereClause,
     attributes: { exclude: excludeAttributes },
-    include: includeModels,
     include: [
       ...includeModels,
       {

@@ -26,6 +26,11 @@ export const Pattern = sequelize.define("pattern", {
     allowNull: false,
     defaultValue: true,
   },
+  order: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
 });
 
 export const Image = sequelize.define("image", {
@@ -42,4 +47,10 @@ export const Image = sequelize.define("image", {
   },
 });
 
-export const PatternImage = sequelize.define("patternImage", {});
+export const PatternImage = sequelize.define("patternImage", {
+  order: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  },
+});
