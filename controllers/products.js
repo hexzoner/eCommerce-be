@@ -361,28 +361,34 @@ export const updateProduct = async (req, res) => {
         }
       } else {
         // If the pattern exists, update it
-
-        // delete existing images from S3 with the pattern before adding new ones
-
         const oldIconUrl = patternExists.icon;
         if (oldIconUrl && oldIconUrl !== pattern.icon) await deleteImageFromS3(oldIconUrl); // Delete old icon from S3
 
-        // Handle images (update or create)
-        if (pattern.images) {
-          // Clear existing images associated with the pattern before adding new ones
+        // Fetch existing images for this pattern
+        const existingImages = await Image.findAll({ where: { patternId: patternExists.id } });
 
-          const imagesToDelete = await Image.findAll({ where: { patternId: patternExists.id } });
-          await Image.destroy({ where: { patternId: patternExists.id } });
+        // Get URLs of existing images
+        const existingImageURLs = existingImages.map((img) => img.imageURL);
 
-          for (const img of imagesToDelete) {
-            await deleteImageFromS3(img.imageURL); // Delete from S3
-          }
+        // Determine which images to keep, delete, or add
+        const incomingImageURLs = pattern.images.map((img) => img.imageURL);
 
-          const imagePromises = pattern.images.map(async (image) => {
-            return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
-          });
-          await Promise.all(imagePromises); // Wait for all images to be saved
+        // Find images to delete (those that are in existing but not in incoming)
+        const imagesToDelete = existingImages.filter((img) => !incomingImageURLs.includes(img.imageURL));
+        for (const img of imagesToDelete) {
+          await deleteImageFromS3(img.imageURL); // Delete from S3
         }
+
+        await Image.destroy({ where: { patternId: patternExists.id, imageURL: imagesToDelete.map((img) => img.imageURL) } });
+
+        // Find images to add (those that are in incoming but not in existing)
+        const imagesToAdd = pattern.images.filter((img) => !existingImageURLs.includes(img.imageURL));
+        const imagePromises = imagesToAdd.map(async (image) => {
+          return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
+        });
+        await Promise.all(imagePromises); // Wait for all new images to be saved
+
+        // Update the pattern itself
         await patternExists.update(pattern);
       }
     }
