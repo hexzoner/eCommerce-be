@@ -44,11 +44,8 @@ const includeModels = [
     as: "defaultSize",
     attributes: ["id", "name"],
   },
-  {
-    model: Feature,
-    through: { attributes: [] },
-  },
-  { model: Room, through: { attributes: [] } },
+  { model: Feature, attributes: ["id", "name", "image"] },
+  { model: Room, attributes: ["id", "name"] },
   {
     model: Pattern,
     attributes: ["id", "name", "icon", "active", "order"],

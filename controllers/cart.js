@@ -8,23 +8,19 @@ async function getCart(userId) {
   // console.log("----Getting cart for user:", userId);
   return await CartProduct.findAll({
     where: { userId },
-    attributes: ["quantity"], // Include quantity, colorId, and sizeId from the join table
+    attributes: ["quantity"],
     include: [
       {
         model: Product,
-        attributes: ["id", "name", "price", "image", "description"], // Product-specific attributes
-        // include: [
-        //   { model: Color, attributes: ["id", "name"] }, // Include the Color details
-        //   { model: Size, attributes: ["id", "name"] }, // Include the Size details
-        // ],
+        attributes: ["id", "name", "price", "image", "description"],
       },
-      { model: Pattern, attributes: ["id", "name"] }, // Include the Color details directly from CartProduct
-      { model: Size, attributes: ["id", "name"] }, // Include the Size details directly from CartProduct
+      { model: Pattern, attributes: ["id", "name", "icon"] },
+      { model: Size, attributes: ["id", "name"] },
     ],
     order: [
       [Product, "id", "ASC"],
-      ["sizeId", "ASC"],
       ["patternId", "ASC"],
+      ["sizeId", "ASC"],
     ],
   });
 }
