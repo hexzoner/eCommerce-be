@@ -28,12 +28,12 @@ const CartProduct = sequelize.define(
         key: "id",
       },
     },
-    colorId: {
+    patternId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       unique: false,
       references: {
-        model: "colors",
+        model: "patterns",
         key: "id",
       },
     },
@@ -51,7 +51,7 @@ const CartProduct = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ["userId", "productId", "colorId", "sizeId"], // Composite unique constraint
+        fields: ["userId", "productId", "patternId", "sizeId"], // Composite unique constraint
       },
     ],
   }

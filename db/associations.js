@@ -53,7 +53,7 @@ Product.hasMany(Pattern, { foreignKey: "productId" });
 
 // Ensure CartProduct is associated with Color and Size
 CartProduct.belongsTo(Product, { foreignKey: "productId" });
-CartProduct.belongsTo(Color, { foreignKey: "colorId" });
+CartProduct.belongsTo(Pattern, { foreignKey: "patternId" });
 CartProduct.belongsTo(Size, { foreignKey: "sizeId" });
 
 //------------------

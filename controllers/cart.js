@@ -1,5 +1,5 @@
 // import { json } from "sequelize";
-import { Product, User, Category, Color, Size } from "../db/associations.js";
+import { Product, Size, Pattern } from "../db/associations.js";
 import { CartProduct } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import sequelize from "../db/index.js";
@@ -18,13 +18,13 @@ async function getCart(userId) {
         //   { model: Size, attributes: ["id", "name"] }, // Include the Size details
         // ],
       },
-      { model: Color, attributes: ["id", "name"] }, // Include the Color details directly from CartProduct
+      { model: Pattern, attributes: ["id", "name"] }, // Include the Color details directly from CartProduct
       { model: Size, attributes: ["id", "name"] }, // Include the Size details directly from CartProduct
     ],
     order: [
       [Product, "id", "ASC"],
       ["sizeId", "ASC"],
-      ["colorId", "ASC"],
+      ["patternId", "ASC"],
     ],
   });
 }
@@ -52,7 +52,7 @@ export const getUserCart = async (req, res) => {
 
 export const updateCart = async (req, res) => {
   const userId = req.userId;
-  const { productId, quantity, color, size } = req.body;
+  const { productId, quantity, pattern, size } = req.body;
 
   // Check if the product exists
   const product = await Product.findByPk(productId);
@@ -66,13 +66,15 @@ export const updateCart = async (req, res) => {
     // console.log("Cart products before update:", JSON.stringify(cartProductsBefore, null, 2));
 
     // Find if this exact combination of productId, colorId, and sizeId exists in the cart
+    const whereClause = {
+      userId,
+      productId,
+      patternId: pattern,
+      sizeId: size,
+    };
+
     let cartProduct = await CartProduct.findOne({
-      where: {
-        userId,
-        productId,
-        colorId: color,
-        sizeId: size,
-      },
+      where: whereClause,
       transaction,
       lock: true, // Lock the row to prevent race conditions
     });
@@ -84,12 +86,7 @@ export const updateCart = async (req, res) => {
       if (quantity === 0) {
         // Remove the product from the cart if quantity is set to 0
         await CartProduct.destroy({
-          where: {
-            userId,
-            productId,
-            colorId: color,
-            sizeId: size,
-          },
+          where: whereClause,
           transaction,
         });
         // console.log("Cart product destroyed:", cartProduct);
@@ -102,12 +99,7 @@ export const updateCart = async (req, res) => {
             quantity: newQuantity,
           },
           {
-            where: {
-              userId,
-              productId,
-              colorId: color,
-              sizeId: size,
-            },
+            where: whereClause,
             transaction,
           }
         );
@@ -116,16 +108,7 @@ export const updateCart = async (req, res) => {
     } else {
       // If the combination doesn't exist, create a new entry
       if (quantity > 0) {
-        const newCartProduct = await CartProduct.create(
-          {
-            userId,
-            productId,
-            colorId: color,
-            sizeId: size,
-            quantity,
-          },
-          { transaction }
-        );
+        const newCartProduct = await CartProduct.create({ ...whereClause, quantity }, { transaction });
         // console.log("New cart product created:", newCartProduct);
       } else throw new ErrorResponse("Quantity must be at least 1", 400);
     }

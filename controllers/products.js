@@ -252,7 +252,10 @@ export const getProductById = async (req, res) => {
       },
     ],
     // Ensure the sizes are ordered by their ID in ascending order
-    order: [[{ model: Size }, "id", "ASC"]],
+    order: [
+      [{ model: Size }, "id", "ASC"],
+      [Pattern, "order", "ASC"],
+    ],
   });
   // if (!product) throw new ErrorResponse("Product not found", 404);
   if (!product) res.json({ message: "Product not found", status: 404 });
