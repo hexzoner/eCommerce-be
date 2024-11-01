@@ -19,6 +19,8 @@ import techniqueRouter from "./routes/techniqueRoutes.js";
 import styleRouter from "./routes/stylesRoutes.js";
 import featureRouter from "./routes/featureRoutes.js";
 import roomRouter from "./routes/roomRoutes.js";
+import productPatternRouter from "./routes/productPatterns.js";
+import S3Router from "./images-upload/upload-image-s3.js";
 
 const app = express();
 export const port = process.env.PORT || 3030;
@@ -44,6 +46,8 @@ app.use("/techniques", techniqueRouter);
 app.use("/styles", styleRouter);
 app.use("/features", featureRouter);
 app.use("/rooms", roomRouter);
+app.use("/patterns", productPatternRouter);
+app.use("/s3", S3Router);
 
 app.use(errorHandler);
 

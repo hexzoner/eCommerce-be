@@ -1,6 +1,7 @@
-import { where } from "sequelize";
-import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature } from "../db/associations.js";
+// import { where } from "sequelize";
+import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature, Pattern, Image } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
+import { deleteImageFromS3 } from "../images-upload/upload-image-s3.js";
 // import { Op } from "sequelize";
 
 const includeModels = [
@@ -43,11 +44,20 @@ const includeModels = [
     as: "defaultSize",
     attributes: ["id", "name"],
   },
+  { model: Feature, attributes: ["id", "name", "image"] },
+  { model: Room, attributes: ["id", "name"] },
   {
-    model: Feature,
-    through: { attributes: [] },
+    model: Pattern,
+    attributes: ["id", "name", "icon", "active", "order"],
+    include: [
+      {
+        model: Image,
+        attributes: ["id", "imageURL", "order"],
+        separate: true,
+        order: [["order", "ASC"]],
+      },
+    ],
   },
-  { model: Room, through: { attributes: [] } },
 ];
 
 const excludeAttributes = ["categoryId", "producerId", "defaultColorId", "defaultSizeId", "styleId", "shapeId", "techniqueId", "materialId"];
@@ -105,7 +115,6 @@ export const getProducts = async (req, res) => {
   const products = await Product.findAll({
     where: whereClause,
     attributes: { exclude: excludeAttributes },
-    include: includeModels,
     include: [
       ...includeModels,
       {
@@ -129,7 +138,10 @@ export const getProducts = async (req, res) => {
         where: rooms.length > 0 ? { id: rooms } : {},
       },
     ],
-    order: [["id", "DESC"]],
+    order: [
+      [Pattern, "order", "ASC"],
+      ["id", "DESC"],
+    ],
     offset,
     limit,
   });
@@ -171,15 +183,13 @@ export const getProducts = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const product = await Product.create(req.body);
-  const { sizes, defaultSizeId, colors, producerId } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, patterns } = req.body;
 
   if (sizes) {
     const validSizes = await Size.findAll({ where: { id: sizes } });
     if (validSizes.length !== sizes.length) {
       throw new ErrorResponse("One or more size IDs are invalid.", 400);
     }
-    await product.setSizes(sizes);
   }
 
   if (defaultSizeId) {
@@ -192,12 +202,21 @@ export const createProduct = async (req, res) => {
     if (validColors.length !== colors.length) {
       throw new ErrorResponse("One or more color IDs are invalid.", 400);
     }
-    await product.setColors(colors);
   }
 
   if (producerId) {
     const producer = await Producer.findByPk(producerId);
     if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
+  }
+
+  const product = await Product.create(req.body);
+  await product.setSizes(sizes);
+  await product.setColors(colors);
+
+  if (patterns) {
+    for (const pattern of patterns) {
+      const patternExists = await Pattern.findByPk(pattern.id);
+    }
   }
 
   const createdProduct = await Product.findByPk(product.id, {
@@ -237,7 +256,10 @@ export const getProductById = async (req, res) => {
       },
     ],
     // Ensure the sizes are ordered by their ID in ascending order
-    order: [[{ model: Size }, "id", "ASC"]],
+    order: [
+      [{ model: Size }, "id", "ASC"],
+      [Pattern, "order", "ASC"],
+    ],
   });
   // if (!product) throw new ErrorResponse("Product not found", 404);
   if (!product) res.json({ message: "Product not found", status: 404 });
@@ -261,7 +283,7 @@ export const updateProduct = async (req, res) => {
     params: { id },
   } = req;
 
-  const { sizes, defaultSizeId, colors, producerId, rooms, features } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId, patterns } = req.body;
 
   const product = await Product.findByPk(id, {
     attributes: { exclude: excludeAttributes },
@@ -282,6 +304,16 @@ export const updateProduct = async (req, res) => {
     // if (!product.sizes.map((size) => size.id).includes(defaultSizeId)) {
     //   throw new ErrorResponse("Default size ID must be one of the product's sizes.", 400);
     // }
+  }
+
+  if (mainPatternId) {
+    const pattern = await Pattern.findByPk(mainPatternId);
+    if (!pattern) throw new ErrorResponse("Main pattern ID is invalid.", 400);
+
+    if (!product.patterns.map((p) => p.id).includes(mainPatternId))
+      throw new ErrorResponse("Default pattern ID must be one of the product's patterns.", 400);
+
+    await product.setMainPattern(pattern);
   }
 
   if (sizes) {
@@ -319,6 +351,67 @@ export const updateProduct = async (req, res) => {
   if (producerId) {
     const producer = await Producer.findByPk(producerId);
     if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
+  }
+
+  if (patterns) {
+    // Create or Update patterns in the database
+    for (const pattern of patterns) {
+      const patternExists = await Pattern.findByPk(pattern.id);
+
+      // If the pattern does not exist, create it
+      if (!patternExists) {
+        const newPattern = await Pattern.create(pattern);
+        await product.addPattern(newPattern);
+
+        // Save associated images
+        if (pattern.images) {
+          const imagePromises = pattern.images.map(async (image) => {
+            return await Image.create({ imageURL: image.imageURL, patternId: newPattern.id, order: image.order });
+          });
+          await Promise.all(imagePromises); // Wait for all images to be saved
+        }
+      } else {
+        // If the pattern exists, update it
+        const oldIconUrl = patternExists.icon;
+        if (oldIconUrl && oldIconUrl !== pattern.icon) await deleteImageFromS3(oldIconUrl); // Delete old icon from S3
+
+        // Fetch existing images for this pattern
+        const existingImages = await Image.findAll({ where: { patternId: patternExists.id } });
+
+        // Get URLs of existing images
+        const existingImageURLs = existingImages.map((img) => img.imageURL);
+
+        // Determine which images to keep, delete, or add
+        const incomingImageURLs = pattern.images.map((img) => img.imageURL);
+
+        // Find images to delete (those that are in existing but not in incoming)
+        const imagesToDelete = existingImages.filter((img) => !incomingImageURLs.includes(img.imageURL));
+        for (const img of imagesToDelete) {
+          await deleteImageFromS3(img.imageURL); // Delete from S3
+        }
+
+        await Image.destroy({ where: { patternId: patternExists.id, imageURL: imagesToDelete.map((img) => img.imageURL) } });
+
+        // Find images to add (those that are in incoming but not in existing)
+        const imagesToAdd = pattern.images.filter((img) => !existingImageURLs.includes(img.imageURL));
+        const imagePromises = imagesToAdd.map(async (image) => {
+          return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
+        });
+        await Promise.all(imagePromises); // Wait for all new images to be saved
+
+        //Update the pattern images order
+        for (const img of pattern.images) {
+          const imageToUpdate = await Image.findOne({ where: { patternId: patternExists.id, id: img.id } });
+          if (imageToUpdate) await imageToUpdate.update({ order: img.order });
+        }
+
+        // Update the pattern itself
+        await patternExists.update(pattern);
+      }
+    }
+
+    // Optionally, set patterns to the product (if you want to ensure only the given patterns are associated)
+    await product.setPatterns(patterns.map((p) => p.id)); // Set only the current patterns
   }
 
   await product.update(req.body);
