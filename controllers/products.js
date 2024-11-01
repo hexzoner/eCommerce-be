@@ -183,15 +183,13 @@ export const getProducts = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const product = await Product.create(req.body);
-  const { sizes, defaultSizeId, colors, producerId } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, patterns } = req.body;
 
   if (sizes) {
     const validSizes = await Size.findAll({ where: { id: sizes } });
     if (validSizes.length !== sizes.length) {
       throw new ErrorResponse("One or more size IDs are invalid.", 400);
     }
-    await product.setSizes(sizes);
   }
 
   if (defaultSizeId) {
@@ -204,12 +202,21 @@ export const createProduct = async (req, res) => {
     if (validColors.length !== colors.length) {
       throw new ErrorResponse("One or more color IDs are invalid.", 400);
     }
-    await product.setColors(colors);
   }
 
   if (producerId) {
     const producer = await Producer.findByPk(producerId);
     if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
+  }
+
+  const product = await Product.create(req.body);
+  await product.setSizes(sizes);
+  await product.setColors(colors);
+
+  if (patterns) {
+    for (const pattern of patterns) {
+      const patternExists = await Pattern.findByPk(pattern.id);
+    }
   }
 
   const createdProduct = await Product.findByPk(product.id, {
@@ -359,7 +366,7 @@ export const updateProduct = async (req, res) => {
         // Save associated images
         if (pattern.images) {
           const imagePromises = pattern.images.map(async (image) => {
-            return await Image.create({ imageURL: image.imageURL, patternId: newPattern.id });
+            return await Image.create({ imageURL: image.imageURL, patternId: newPattern.id, order: image.order });
           });
           await Promise.all(imagePromises); // Wait for all images to be saved
         }
