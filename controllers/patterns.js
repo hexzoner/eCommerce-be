@@ -1,5 +1,6 @@
 import { Product, Pattern, Image } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
+import { deleteImageFromS3 } from "../images-upload/upload-image-s3.js";
 
 const getPatternQueryOptions = {
   include: [
@@ -95,7 +96,12 @@ export const deleteProductPattern = async (req, res) => {
   const pattern = await Pattern.findByPk(id);
   if (!pattern) throw new ErrorResponse("Pattern not found", 404);
 
-  //delete pattern images first
+  const imagesToDelete = await Image.findAll({ where: { patternId: id } });
+  for (const img of imagesToDelete) {
+    await deleteImageFromS3(img.imageURL);
+  }
+  await deleteImageFromS3(pattern.icon);
+
   await Image.destroy({ where: { patternId: id } });
 
   await pattern.destroy();
