@@ -2,12 +2,12 @@ import { Sequelize } from "sequelize";
 // const sequelize = new Sequelize(process.env.PG_URI);
 const sequelize = new Sequelize(process.env.PG_URI, {
   dialect: "postgres",
-  dialectOptions: {
-    ssl: {
-      require: true,
-      //   rejectUnauthorized: false, // Ignore self-signed certificates
-    },
-  },
+  // dialectOptions: {
+  //   ssl: {
+  //     require: true,
+  //     //   rejectUnauthorized: false, // Ignore self-signed certificates
+  //   },
+  // },
   pool: {
     max: 10, // maximum number of connections in the pool
     min: 0, // minimum number of connections in the pool
