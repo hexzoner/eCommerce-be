@@ -183,7 +183,7 @@ export const getProducts = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const { sizes, defaultSizeId, colors, producerId, patterns } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, patterns, rooms, features } = req.body;
 
   if (sizes) {
     const validSizes = await Size.findAll({ where: { id: sizes } });
@@ -204,6 +204,20 @@ export const createProduct = async (req, res) => {
     }
   }
 
+  if (rooms) {
+    const validRooms = await Room.findAll({ where: { id: rooms } });
+    if (validRooms.length !== rooms.length) {
+      throw new ErrorResponse("One or more room IDs are invalid.", 400);
+    }
+  }
+
+  if (features) {
+    const validFeatures = await Feature.findAll({ where: { id: features } });
+    if (validFeatures.length !== features.length) {
+      throw new ErrorResponse("One or more feature IDs are invalid.", 400);
+    }
+  }
+
   if (producerId) {
     const producer = await Producer.findByPk(producerId);
     if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
@@ -212,6 +226,8 @@ export const createProduct = async (req, res) => {
   const product = await Product.create(req.body);
   await product.setSizes(sizes);
   await product.setColors(colors);
+  await product.setRooms(rooms);
+  await product.setFeatures(features);
 
   if (patterns) {
     for (const pattern of patterns) {
