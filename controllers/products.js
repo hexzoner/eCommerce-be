@@ -215,7 +215,8 @@ export const createProduct = async (req, res) => {
 
   if (patterns) {
     for (const pattern of patterns) {
-      const patternExists = await Pattern.findByPk(pattern.id);
+      // const newPattern = await Pattern.findByPk(pattern.id);
+      createNewPattern(pattern, product);
     }
   }
 
@@ -277,6 +278,26 @@ export const getProductById = async (req, res) => {
 
   res.json(productData);
 };
+
+async function createNewPattern(pattern, product) {
+  // const newPatternBody = {
+  //   name: pattern.name,
+  //   icon: pattern.icon,
+  //   active: pattern.active,
+  //   order: pattern.order,
+  //   id: pattern.id,
+  // };
+  const newPattern = await Pattern.create(pattern);
+  await product.addPattern(newPattern);
+
+  // Save associated images
+  if (pattern.images) {
+    const imagePromises = pattern.images.map(async (image) => {
+      return await Image.create({ imageURL: image.imageURL, patternId: newPattern.id, order: image.order });
+    });
+    await Promise.all(imagePromises); // Wait for all images to be saved
+  }
+}
 
 export const updateProduct = async (req, res) => {
   const {
@@ -395,7 +416,11 @@ export const updateProduct = async (req, res) => {
         // Find images to add (those that are in incoming but not in existing)
         const imagesToAdd = pattern.images.filter((img) => !existingImageURLs.includes(img.imageURL));
         const imagePromises = imagesToAdd.map(async (image) => {
-          return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
+          return await Image.create({
+            imageURL: image.imageURL,
+            patternId: patternExists.id,
+            order: image.order,
+          });
         });
         await Promise.all(imagePromises); // Wait for all new images to be saved
 
