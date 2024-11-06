@@ -30,11 +30,12 @@ export async function uploadImageS3(req, res, next) {
     // if (!req.file) throw new ErrorResponse("No file uploaded", 400);
 
     const { fileName, fileType } = req.body;
+    const uniqueFileName = `${Date.now()}-${fileName}`;
 
     try {
       const params = {
         Bucket: process.env.AWS_S3_BUCKET_NAME,
-        Key: `patterns/${fileName}`, // e.g., patterns/image1.jpg
+        Key: `patterns/${uniqueFileName}`, // File name to save as in S3
         ContentType: fileType,
       };
 

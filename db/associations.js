@@ -42,8 +42,8 @@ Product.belongsToMany(User, { through: CartProduct, as: "CartProducts" });
 // ProductPattern.belongsTo(Product, { foreignKey: "productId" });
 // Product.belongsToMany(Pattern, { through: ProductPattern });
 // Pattern.belongsToMany(Product, { through: ProductPattern });
-Product.belongsTo(Pattern, { as: "mainPattern", foreignKey: "mainPatternId" });
-Pattern.hasMany(Product, { as: "mainForProducts", foreignKey: "mainPatternId" });
+// Product.belongsTo(Pattern, { as: "mainPattern", foreignKey: "mainPatternId" });
+// Pattern.hasMany(Product, { as: "mainForProducts", foreignKey: "mainPatternId" });
 
 Image.belongsTo(Pattern, { foreignKey: "patternId" });
 Pattern.hasMany(Image, { foreignKey: "patternId" });

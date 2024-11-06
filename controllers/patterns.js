@@ -108,3 +108,13 @@ export const deleteProductPattern = async (req, res) => {
 
   res.json({ message: "Product Pattern deleted successfully" });
 };
+
+export const getPatternById = async (req, res) => {
+  const { id } = req.query;
+
+  const pattern = await Pattern.findByPk(id, getPatternQueryOptions);
+
+  if (!pattern) throw new ErrorResponse("Pattern not found", 404);
+
+  res.json(pattern);
+};

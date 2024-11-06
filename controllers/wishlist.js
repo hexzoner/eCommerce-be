@@ -1,4 +1,4 @@
-import { Product, User, Category, Color, Size } from "../db/associations.js";
+import { Product, User, Category, Color, Size, Pattern, Image } from "../db/associations.js";
 import Wishlist from "../models/wishlist.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
@@ -13,9 +13,46 @@ export const GetWishlist = async (req, res) => {
         { model: Category, attributes: ["name"] }, // Include category name
         { model: Color, attributes: ["name"] }, // Include color name
         { model: Size, attributes: ["name"] }, // Include size name
+        // {
+        //   model: Pattern,
+        //   attributes: ["name", "icon", "active", "order"],
+        //   include: [
+        //     {
+        //       model: Image,
+        //       attributes: ["id", "imageURL", "order"],
+        //       separate: true,
+        //       order: [["order", "ASC"]],
+        //     },
+        //   ],
+        // },
       ],
+      // order: [
+      //   [Pattern, "order", "ASC"],
+      //   ["id", "DESC"],
+      // ],
     },
   });
+
+  for (let i = 0; i < userWishlist.WishlistProducts.length; i++) {
+    const product = userWishlist.WishlistProducts[i];
+    const patterns = await Pattern.findAll({
+      where: { productId: product.id },
+      include: [
+        {
+          model: Image,
+          attributes: ["id", "imageURL", "order"],
+        },
+      ],
+      order: [["order", "ASC"]],
+    });
+
+    // Sort images by order
+    patterns.forEach((pattern) => {
+      pattern.images.sort((a, b) => a.order - b.order);
+    });
+
+    product.dataValues.patterns = patterns;
+  }
 
   res.json(userWishlist.WishlistProducts);
 };

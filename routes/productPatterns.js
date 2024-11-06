@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getProductPatterns, createProductPattern, updateProductPattern, deleteProductPattern } from "../controllers/patterns.js";
+import { getProductPatterns, createProductPattern, updateProductPattern, deleteProductPattern, getPatternById } from "../controllers/patterns.js";
 import { asyncHandler } from "../middleware/errorHandler.js";
 import validate from "../middleware/validate.js";
 import authorize from "../middleware/authorize.js";
@@ -10,7 +10,7 @@ const productPatternRouter = Router();
 
 productPatternRouter
   .route("/")
-  .get(asyncHandler(getProductPatterns))
+  .get(asyncHandler(getPatternById))
   .post(verifyTokenMiddleware, authorize("admin"), validate(patternSchema.POST), asyncHandler(createProductPattern));
 
 productPatternRouter

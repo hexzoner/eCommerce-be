@@ -183,7 +183,7 @@ export const getProducts = async (req, res) => {
 };
 
 export const createProduct = async (req, res) => {
-  const { sizes, defaultSizeId, colors, producerId, patterns } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, patterns, rooms, features } = req.body;
 
   if (sizes) {
     const validSizes = await Size.findAll({ where: { id: sizes } });
@@ -204,6 +204,20 @@ export const createProduct = async (req, res) => {
     }
   }
 
+  if (rooms) {
+    const validRooms = await Room.findAll({ where: { id: rooms } });
+    if (validRooms.length !== rooms.length) {
+      throw new ErrorResponse("One or more room IDs are invalid.", 400);
+    }
+  }
+
+  if (features) {
+    const validFeatures = await Feature.findAll({ where: { id: features } });
+    if (validFeatures.length !== features.length) {
+      throw new ErrorResponse("One or more feature IDs are invalid.", 400);
+    }
+  }
+
   if (producerId) {
     const producer = await Producer.findByPk(producerId);
     if (!producer) throw new ErrorResponse("Producer ID is invalid.", 400);
@@ -212,10 +226,13 @@ export const createProduct = async (req, res) => {
   const product = await Product.create(req.body);
   await product.setSizes(sizes);
   await product.setColors(colors);
+  await product.setRooms(rooms);
+  await product.setFeatures(features);
 
   if (patterns) {
     for (const pattern of patterns) {
-      const patternExists = await Pattern.findByPk(pattern.id);
+      // const newPattern = await Pattern.findByPk(pattern.id);
+      createNewPattern(pattern, product);
     }
   }
 
@@ -277,6 +294,26 @@ export const getProductById = async (req, res) => {
 
   res.json(productData);
 };
+
+async function createNewPattern(pattern, product) {
+  // const newPatternBody = {
+  //   name: pattern.name,
+  //   icon: pattern.icon,
+  //   active: pattern.active,
+  //   order: pattern.order,
+  //   id: pattern.id,
+  // };
+  const newPattern = await Pattern.create(pattern);
+  await product.addPattern(newPattern);
+
+  // Save associated images
+  if (pattern.images) {
+    const imagePromises = pattern.images.map(async (image) => {
+      return await Image.create({ imageURL: image.imageURL, patternId: newPattern.id, order: image.order });
+    });
+    await Promise.all(imagePromises); // Wait for all images to be saved
+  }
+}
 
 export const updateProduct = async (req, res) => {
   const {
@@ -395,7 +432,11 @@ export const updateProduct = async (req, res) => {
         // Find images to add (those that are in incoming but not in existing)
         const imagesToAdd = pattern.images.filter((img) => !existingImageURLs.includes(img.imageURL));
         const imagePromises = imagesToAdd.map(async (image) => {
-          return await Image.create({ imageURL: image.imageURL, patternId: patternExists.id });
+          return await Image.create({
+            imageURL: image.imageURL,
+            patternId: patternExists.id,
+            order: image.order,
+          });
         });
         await Promise.all(imagePromises); // Wait for all new images to be saved
 
