@@ -25,7 +25,7 @@ async function getCart(userId) {
   });
 }
 
-function cartResponse(userCart) {
+export function calculateProductsTotal(userCart) {
   for (let i = 0; i < userCart.length; i++) {
     const heightWidth = userCart[i].size.name.split("x");
     if (heightWidth.length === 2) userCart[i].product.price = (userCart[i].product.price * heightWidth[0] * heightWidth[1]).toFixed(2);
@@ -43,7 +43,7 @@ export const getUserCart = async (req, res) => {
   const userId = req.userId;
   const userCart = await getCart(userId);
   if (!userCart) throw new ErrorResponse("User not found", 404);
-  res.json(cartResponse(userCart));
+  res.json(calculateProductsTotal(userCart));
 };
 
 export const updateCart = async (req, res) => {
@@ -117,7 +117,7 @@ export const updateCart = async (req, res) => {
 
     // Return the updated cart
     const userCart = await getCart(userId);
-    res.json(cartResponse(userCart));
+    res.json(calculateProductsTotal(userCart));
   } catch (error) {
     await transaction.rollback();
     console.error("Error updating cart:", error);

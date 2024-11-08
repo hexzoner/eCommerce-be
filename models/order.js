@@ -9,6 +9,7 @@ const Order = sequelize.define("order", {
     validate: {
       isFloat: { msg: "Total must be a float number" },
     },
+    defaultValue: 0,
   },
 });
 
