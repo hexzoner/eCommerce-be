@@ -28,7 +28,10 @@ Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsToMany(Product, { through: OrderProduct });
 Product.belongsToMany(Order, { through: OrderProduct });
 
+// Association from Order to OrderProduct
+Order.hasMany(OrderProduct, { foreignKey: "orderId" });
 OrderProduct.belongsTo(Order, { foreignKey: "orderId" });
+
 OrderProduct.belongsTo(Product, { foreignKey: "productId" });
 OrderProduct.belongsTo(Pattern, { foreignKey: "patternId" });
 OrderProduct.belongsTo(Size, { foreignKey: "sizeId" });

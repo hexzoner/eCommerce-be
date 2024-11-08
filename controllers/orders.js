@@ -82,8 +82,62 @@ function formatOrders(orders) {
 }
 
 export const getOrders = async (req, res) => {
-  const orders = await OrderProduct.findAll(orderOptions);
-  res.json(formatOrders(orders));
+  const {
+    query: { page, perPage },
+  } = req;
+
+  // Get total unique orders and calculate the offset
+  const totalOrders = await Order.count();
+  const offset = page ? (page - 1) * perPage : 0;
+  const limit = perPage ? perPage : 20;
+
+  // Get order IDs for the current page
+  const orderIds = await Order.findAll({
+    // where: { userId },
+    attributes: ["id"],
+    order: [["id", "DESC"]],
+    offset,
+    limit,
+  });
+  const orderIdList = orderIds.map((order) => order.id);
+
+  const orders = await OrderProduct.findAll({
+    where: {
+      orderId: orderIdList, // Only fetch OrderProduct entries for current page orderIds
+    },
+    attributes: ["orderId", "quantity"],
+    include: [
+      {
+        model: Product,
+        attributes: ["id", "name", "price", "image", "description"],
+      },
+      { model: Pattern, attributes: ["id", "name", "icon"] },
+      { model: Size, attributes: ["id", "name"] },
+      {
+        model: Order,
+        attributes: ["total", "createdAt", "updatedAt"],
+        include: [
+          {
+            model: User,
+            attributes: ["id", "firstName", "lastName", "email"],
+          },
+        ],
+      },
+    ],
+    order: [
+      ["orderId", "DESC"],
+      [Product, "id", "ASC"],
+      ["patternId", "ASC"],
+      ["sizeId", "ASC"],
+    ],
+  });
+
+  res.json({
+    results: formatOrders(orders),
+    total: totalOrders,
+    page: page ? parseInt(page) : 1,
+    totalPages: Math.ceil(totalOrders / limit),
+  });
 };
 
 export const getUserOrders = async (req, res) => {
