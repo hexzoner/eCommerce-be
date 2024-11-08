@@ -1,7 +1,6 @@
 import Joi from "joi";
 
 const orderSchema = Joi.object({
-  userId: Joi.number().integer().required(),
   products: Joi.array()
     .items(
       Joi.object({

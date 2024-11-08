@@ -10,7 +10,7 @@ const orderRouter = Router();
 
 orderRouter
   .route("/")
-  .get(verifyTokenMiddleware, authorize("admin"), asyncHandler(getOrders))
+  .get(verifyTokenMiddleware, authorize(["admin"]), asyncHandler(getOrders))
   .post(verifyTokenMiddleware, validate(orderSchema), asyncHandler(createOrder));
 
 orderRouter.route("/user").get(verifyTokenMiddleware, asyncHandler(getUserOrders));
@@ -19,6 +19,6 @@ orderRouter
   .route("/:id")
   .get(verifyTokenMiddleware, asyncHandler(getOrderById))
   .put(verifyTokenMiddleware, validate(orderSchema), asyncHandler(updateOrder))
-  .delete(verifyTokenMiddleware, asyncHandler(deleteOrder));
+  .delete(verifyTokenMiddleware, authorize(["admin"]), asyncHandler(deleteOrder));
 
 export default orderRouter;
