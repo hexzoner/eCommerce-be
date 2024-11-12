@@ -1,7 +1,23 @@
 // import { where } from "sequelize";
-import { Product, Category, Color, Size, Producer, Style, Technique, Material, Shape, Room, Feature, Pattern, Image } from "../db/associations.js";
+import {
+  ProductPrice,
+  Product,
+  Category,
+  Color,
+  Size,
+  Producer,
+  Style,
+  Technique,
+  Material,
+  Shape,
+  Room,
+  Feature,
+  Pattern,
+  Image,
+} from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import { deleteImageFromS3 } from "../images-upload/upload-image-s3.js";
+import stripe from "stripe";
 // import { Op } from "sequelize";
 
 const includeModels = [
@@ -42,7 +58,7 @@ const includeModels = [
   {
     model: Size,
     as: "defaultSize",
-    attributes: ["id", "name"],
+    attributes: ["id", "name", "squareMeters"],
   },
   { model: Feature, attributes: ["id", "name", "image"] },
   { model: Room, attributes: ["id", "name"] },
@@ -120,7 +136,7 @@ export const getProducts = async (req, res) => {
       {
         // Include filtering for many-to-many relationship tables
         model: Size,
-        attributes: ["id", "name"],
+        attributes: ["id", "name", "squareMeters"],
         through: { attributes: [] }, // Exclude attributes from the join table (ProductSize)
         where: sizes.length > 0 ? { id: sizes } : {}, // Filter sizes if provided
         // required: false, // Include products without sizes (LEFT OUTER JOIN)
@@ -140,6 +156,7 @@ export const getProducts = async (req, res) => {
     ],
     order: [
       [Pattern, "order", "ASC"],
+      [Size, "squareMeters", "ASC"],
       ["id", "DESC"],
     ],
     offset,
@@ -264,17 +281,17 @@ export const getProductById = async (req, res) => {
       {
         model: Size, // Include the default size (one-to-many relationship)
         as: "defaultSize",
-        attributes: ["id", "name"],
+        attributes: ["id", "name", "squareMeters"],
       },
       {
         model: Size,
         through: { attributes: [] },
-        attributes: ["id", "name"],
+        attributes: ["id", "name", "squareMeters"],
       },
     ],
     // Ensure the sizes are ordered by their ID in ascending order
     order: [
-      [{ model: Size }, "id", "ASC"],
+      [Size, "squareMeters", "ASC"],
       [Pattern, "order", "ASC"],
     ],
   });
@@ -320,7 +337,7 @@ export const updateProduct = async (req, res) => {
     params: { id },
   } = req;
 
-  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId, patterns } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId, patterns, price } = req.body;
 
   const product = await Product.findByPk(id, {
     attributes: { exclude: excludeAttributes },
@@ -455,6 +472,17 @@ export const updateProduct = async (req, res) => {
     await product.setPatterns(patterns.map((p) => p.id)); // Set only the current patterns
   }
 
+  if (price) {
+    for (const s of product.sizes) {
+      try {
+        await stripeLogicPerSize(s, product, price);
+      } catch (error) {
+        console.log(error);
+        throw new ErrorResponse("Error updating Stripe prices", 500);
+      }
+    }
+  }
+
   await product.update(req.body);
 
   // Fetch the updated product, including associated sizes
@@ -481,3 +509,59 @@ export const deleteProduct = async (req, res) => {
   await product.destroy();
   res.json("Product " + id + " was deleted successfully");
 };
+
+async function stripeLogicPerSize(s, product, price) {
+  const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
+  const productPrice = await ProductPrice.findOne({ where: { productId: product.id, sizeId: s.id } });
+  const size = await Size.findByPk(s.id);
+  if (!size) throw new ErrorResponse("Size not found", 404);
+
+  const newTotalPrice = Math.round(price * size.squareMeters * 100); // Multiply by 100 to convert to cents
+
+  if (productPrice && productPrice.stripeProductId) {
+    if (productPrice.price === newTotalPrice) return; // No need to update the price
+
+    // Update existing Stripe price
+    const newStripePrice = await stripeSession.prices.create({
+      unit_amount: newTotalPrice,
+      currency: "eur",
+      product: productPrice.stripeProductId,
+    });
+    // Update the price in your database
+    await productPrice.update({ productId: product.id, sizeId: s.id, price: newTotalPrice, stripePriceId: newStripePrice.id });
+  } else {
+    // Create Stripe product only if it doesn't already exist
+    let stripeProduct;
+    if (!productPrice?.stripeProductId) {
+      stripeProduct = await stripeSession.products.create({ name: product.name });
+    } else {
+      stripeProduct = await stripeSession.products.retrieve(productPrice.stripeProductId);
+    }
+
+    // Create or update price in Stripe
+    const stripePrice = await stripeSession.prices.create({
+      unit_amount: newTotalPrice,
+      currency: "eur",
+      product: stripeProduct.id,
+    });
+
+    // Create or update the product price entry in the database
+    if (!productPrice)
+      await ProductPrice.create({
+        productId: product.id,
+        sizeId: s.id,
+        price: newTotalPrice,
+        stripeId: stripePrice.id, // Corrected assignment
+        stripeProductId: stripeProduct.id, // Track the product in your DB for future use
+      });
+    else {
+      await productPrice.update({
+        productId: product.id,
+        sizeId: s.id,
+        price: newTotalPrice,
+        stripePriceId: stripePrice.id,
+        stripeProductId: stripeProduct.id,
+      });
+    }
+  }
+}

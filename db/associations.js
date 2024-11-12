@@ -19,6 +19,7 @@ import Material from "../models/Material.js";
 import Technique from "../models/Technique.js";
 import Room from "../models/Room.js";
 import Feature from "../models/Feature.js";
+import ProductPrice from "../models/ProductPrice.js";
 // import { ProductPattern } from "../models/ProductPattern.js";
 import { Image, Pattern } from "../models/Pattern.js";
 
@@ -64,6 +65,11 @@ CartProduct.belongsTo(Product, { foreignKey: "productId" });
 CartProduct.belongsTo(Pattern, { foreignKey: "patternId" });
 CartProduct.belongsTo(Size, { foreignKey: "sizeId" });
 
+// Table for storing product prices
+ProductPrice.belongsTo(Product, { foreignKey: "productId" });
+// ProductPrice.belongsTo(Pattern, { foreignKey: "patternId" });
+ProductPrice.belongsTo(Size, { foreignKey: "sizeId" });
+
 //------------------
 User.belongsToMany(Product, { through: Wishlist, as: "WishlistProducts" });
 Product.belongsToMany(User, { through: Wishlist, as: "WishlistProducts" });
@@ -78,8 +84,8 @@ Size.belongsToMany(Product, { through: ProductSize });
 Product.belongsTo(Size, { as: "defaultSize", foreignKey: "defaultSizeId" });
 Size.hasMany(Product, { as: "defaultForProducts", foreignKey: "defaultSizeId" });
 
-Review.belongsTo(Product, { foreignKey: "productId" });
-Product.hasMany(Review, { foreignKey: "productId" });
+Review.belongsTo(Product, { foreignKey: "productId", allowNull: true });
+Product.hasMany(Review, { foreignKey: "productId", allowNull: true });
 
 Producer.hasMany(Product, { foreignKey: { name: "producerId", allowNull: false } });
 Product.belongsTo(Producer, { foreignKey: { name: "producerId", allowNull: false } });
@@ -128,4 +134,5 @@ export {
   Image,
   Pattern,
   // PatternImage,
+  ProductPrice,
 };
