@@ -23,5 +23,6 @@ export const createCheckout = async (req, res) => {
     cancel_url: `${YOUR_DOMAIN}?canceled=true`,
   });
 
-  res.redirect(303, session.url);
+  // res.redirect(303, session.url);
+  res.status(200).json({ url: session.url });
 };

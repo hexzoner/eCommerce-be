@@ -9,9 +9,10 @@ export const getProductPrices = async (req, res) => {
 export const getProductPricesById = async (req, res) => {
   const {
     params: { id },
+    query: { sizeId },
   } = req;
   const productPrices = await ProductPrice.findAll({
-    where: { productId: id },
+    where: sizeId ? { productId: id, sizeId } : { productId: id },
     attributes: { exclude: ["createdAt", "updatedAt", "productId"] },
     include: {
       model: Size,
