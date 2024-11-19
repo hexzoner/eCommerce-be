@@ -370,14 +370,6 @@ export const updateProduct = async (req, res) => {
     await product.setMainPattern(pattern);
   }
 
-  if (sizes) {
-    const validSizes = await Size.findAll({ where: { id: sizes } });
-    if (validSizes.length !== sizes.length) {
-      throw new ErrorResponse("One or more size IDs are invalid.", 400);
-    }
-    await product.setSizes(sizes);
-  }
-
   if (colors) {
     const validColors = await Color.findAll({ where: { id: colors } });
     if (validColors.length !== colors.length) {
@@ -475,10 +467,42 @@ export const updateProduct = async (req, res) => {
   if (price) {
     for (const s of product.sizes) {
       try {
+        await stripeLogicPerSize(s.id, product, price);
+      } catch (error) {
+        console.log(error);
+        throw new ErrorResponse("Error updating Stripe prices: " + error.message, 500);
+      }
+    }
+  }
+
+  if (sizes) {
+    const validSizes = await Size.findAll({ where: { id: sizes } });
+    if (validSizes.length !== sizes.length) {
+      throw new ErrorResponse("One or more size IDs are invalid.", 400);
+    }
+    await product.setSizes(sizes);
+
+    for (const s of sizes) {
+      try {
         await stripeLogicPerSize(s, product, price);
       } catch (error) {
         console.log(error);
-        throw new ErrorResponse("Error updating Stripe prices", 500);
+        throw new ErrorResponse("Error updating Stripe prices: " + error.message, 500);
+      }
+    }
+
+    // Delete Stripe prices for sizes that are no longer associated with the product
+    const productPrices = await ProductPrice.findAll({ where: { productId: product.id } });
+    const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
+
+    for (const productPrice of productPrices) {
+      if (!sizes.includes(productPrice.sizeId)) {
+        if (productPrice.stripePriceId) {
+          // Deactivate the Stripe price
+          await stripeSession.prices.update(productPrice.stripePriceId, { active: false });
+        }
+        // Remove the local product price from the database
+        await ProductPrice.destroy({ where: { id: productPrice.id } });
       }
     }
   }
@@ -506,19 +530,53 @@ export const deleteProduct = async (req, res) => {
   const id = req.params.id;
   const product = await Product.findByPk(id);
   if (!product) throw new ErrorResponse("Product not found", 404);
+  const productPrices = await ProductPrice.findAll({ where: { productId: product.id } });
+  const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
+
+  // Delete all Stripe prices associated with the product
+  for (const productPrice of productPrices) {
+    if (productPrice.stripePriceId) {
+      await stripeSession.prices.del(productPrice.stripePriceId);
+    }
+  }
+
+  // Delete all prices associated with the product
+  await ProductPrice.destroy({ where: { productId: product.id } });
+
+  // Delete all images associated with the product patterns
+
+  const patterns = await product.getPatterns();
+  for (const pattern of patterns) {
+    const images = await pattern.getImages();
+    for (const image of images) {
+      await Image.destroy({ where: { id: image.id } });
+      await deleteImageFromS3(image.imageURL);
+    }
+  }
+
+  // Delete all patterns associated with the product
+  await product.removePatterns();
+
   await product.destroy();
   res.json("Product " + id + " was deleted successfully");
 };
 
-async function stripeLogicPerSize(s, product, price) {
+async function stripeLogicPerSize(sizeId, product, price) {
+  // const _product = await Product.findByPk(product.id);
   const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
-  const productPrice = await ProductPrice.findOne({ where: { productId: product.id, sizeId: s.id } });
-  const size = await Size.findByPk(s.id);
+  const productPrice = await ProductPrice.findOne({ where: { productId: product.id, sizeId } });
+  const size = await Size.findByPk(sizeId);
   if (!size) throw new ErrorResponse("Size not found", 404);
 
   const newTotalPrice = Math.round(price * size.squareMeters * 100); // Multiply by 100 to convert to cents
+  // console.log("---- New Total Price ----" + newTotalPrice);
+  // const stripeProductExists = await stripeSession.products.retrieve(productPrice.stripeProductId);
 
+  // return;
   if (productPrice && productPrice.stripeProductId) {
+    // console.log("---- Product Price found ----" + productPrice.stripeProductId);
+    // if (!_product.stripeProductId) await _product.update({ stripeProductId: productPrice.stripeProductId });
+
     if (productPrice.price === newTotalPrice) return; // No need to update the price
 
     // Update existing Stripe price
@@ -528,15 +586,18 @@ async function stripeLogicPerSize(s, product, price) {
       product: productPrice.stripeProductId,
     });
     // Update the price in your database
-    await productPrice.update({ productId: product.id, sizeId: s.id, price: newTotalPrice, stripePriceId: newStripePrice.id });
+    await productPrice.update({ productId: product.id, sizeId, price: newTotalPrice, stripePriceId: newStripePrice.id });
   } else {
     // Create Stripe product only if it doesn't already exist
+    // console.log("---- Product Price or Stripe Product ID not found ----");
     let stripeProduct;
     if (!productPrice?.stripeProductId) {
       stripeProduct = await stripeSession.products.create({ name: product.name });
     } else {
       stripeProduct = await stripeSession.products.retrieve(productPrice.stripeProductId);
     }
+    // Save the Stripe product ID in the product table
+    // await _product.update({ stripeProductId: stripeProduct.id });
 
     // Create or update price in Stripe
     const stripePrice = await stripeSession.prices.create({
@@ -546,18 +607,19 @@ async function stripeLogicPerSize(s, product, price) {
     });
 
     // Create or update the product price entry in the database
-    if (!productPrice)
+
+    if (!productPrice) {
       await ProductPrice.create({
         productId: product.id,
-        sizeId: s.id,
+        sizeId,
         price: newTotalPrice,
-        stripeId: stripePrice.id, // Corrected assignment
+        stripePriceId: stripePrice.id, // Corrected assignment
         stripeProductId: stripeProduct.id, // Track the product in your DB for future use
       });
-    else {
+    } else {
       await productPrice.update({
         productId: product.id,
-        sizeId: s.id,
+        sizeId,
         price: newTotalPrice,
         stripePriceId: stripePrice.id,
         stripeProductId: stripeProduct.id,
@@ -565,3 +627,9 @@ async function stripeLogicPerSize(s, product, price) {
     }
   }
 }
+
+// async function getStripeProductId(id) {
+//   const productPrice = await ProductPrice.findOne({ where: { productId: id } });
+//   const stripeProductId = productPrice?.stripeProductId || "";
+//   return stripeProductId;
+// }

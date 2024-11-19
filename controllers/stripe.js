@@ -1,11 +1,15 @@
 import stripe from "stripe";
 
-export const stripePayment = async (req, res) => {
-  const items = req.body;
+export const createCheckout = async (req, res) => {
+  const { items } = req.body;
+  if (!items || items.length === 0) {
+    return res.status(400).json({ message: "No items in the cart" });
+  }
 
+  const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
   const YOUR_DOMAIN = `${req.protocol}://${req.get("host")}`;
 
-  const session = await stripe.checkout.sessions.create({
+  const session = await stripeSession.checkout.sessions.create({
     line_items: items,
     //       [
     //   {
