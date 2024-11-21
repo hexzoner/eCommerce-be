@@ -1,13 +1,11 @@
 import stripe from "stripe";
 
 export const createCheckout = async (req, res) => {
-  const { items } = req.body;
-  if (!items || items.length === 0) {
-    return res.status(400).json({ message: "No items in the cart" });
-  }
+  const { items, success_url, cancel_url } = req.body;
+  if (!items || items.length === 0) return res.status(400).json({ message: "No items in the cart" });
 
   const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
-  const YOUR_DOMAIN = `${req.protocol}://${req.get("host")}`;
+  // const YOUR_DOMAIN = `${req.protocol}://${req.get("host")}`;
 
   const session = await stripeSession.checkout.sessions.create({
     line_items: items,
@@ -19,8 +17,8 @@ export const createCheckout = async (req, res) => {
     //   },
     // ],
     mode: "payment",
-    success_url: `${YOUR_DOMAIN}?success=true`,
-    cancel_url: `${YOUR_DOMAIN}?canceled=true`,
+    success_url,
+    cancel_url,
   });
 
   // res.redirect(303, session.url);
