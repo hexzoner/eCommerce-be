@@ -17,10 +17,10 @@ export const createCheckout = async (req, res) => {
     //   },
     // ],
     mode: "payment",
-    success_url,
+    success_url: `${success_url}&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url,
   });
 
   // res.redirect(303, session.url);
-  res.status(200).json({ url: session.url });
+  res.status(200).json({ url: session.url, sessionId: session.id });
 };
