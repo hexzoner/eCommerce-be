@@ -2,6 +2,8 @@ import stripe from "stripe";
 
 export const createCheckout = async (req, res) => {
   const { items, success_url, cancel_url } = req.body;
+  // console.log("-----------------------------------------");
+  // console.log({ items, success_url, cancel_url });
   if (!items || items.length === 0) return res.status(400).json({ message: "No items in the cart" });
 
   const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
@@ -21,6 +23,8 @@ export const createCheckout = async (req, res) => {
     cancel_url,
   });
 
+  console.log("-----------------------------------------");
+  console.log({ url: session.url, sessionId: session.id });
   // res.redirect(303, session.url);
   res.status(200).json({ url: session.url, sessionId: session.id });
 };

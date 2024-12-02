@@ -13,6 +13,7 @@ const orderSchema = Joi.object({
     .min(1)
     .required(),
   total: Joi.number().min(1).optional(),
+  stripeSessionId: Joi.string().required(),
 });
 
 export default orderSchema;

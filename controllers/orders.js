@@ -1,20 +1,22 @@
 import { Order, Product, User, Pattern, Size, OrderProduct, ProductSize } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
-import { calculateProductsTotal } from "./cart.js";
+import { calculateProductsTotal, calculatePriceForProduct } from "../utils/PriceCalculation.js";
 import sequelize from "../db/index.js";
 
+const orderProductAttributes = ["orderId", "quantity", "price"];
+
 const orderOptions = {
-  attributes: ["orderId", "quantity"],
+  attributes: orderProductAttributes,
   include: [
     {
       model: Product,
       attributes: ["id", "name", "price", "image", "description"],
     },
     { model: Pattern, attributes: ["id", "name", "icon"] },
-    { model: Size, attributes: ["id", "name"] },
+    { model: Size, attributes: ["id", "name", "squareMeters"] },
     {
       model: Order,
-      attributes: ["total", "createdAt", "updatedAt"],
+      attributes: ["total", "createdAt", "updatedAt", "stripeSessionId"],
       include: [
         {
           model: User,
@@ -45,7 +47,7 @@ function formatProduct(order) {
     id: order.product.id,
     quantity: order.quantity,
     name: order.product.name,
-    price: order.product.price,
+    price: order.price,
     pattern: {
       id: order.pattern.id,
       name: order.pattern.name,
@@ -69,6 +71,7 @@ function formatOrders(orders) {
       // Create a new order in the formattedOrders array
       result.push({
         id: o.orderId,
+        stripeSessionId: o.order.stripeSessionId,
         user: formatUser(o.order.user),
         products: [formatProduct(o)],
         total: o.order.total,
@@ -105,7 +108,7 @@ export const getOrders = async (req, res) => {
     where: {
       orderId: orderIdList, // Only fetch OrderProduct entries for current page orderIds
     },
-    attributes: ["orderId", "quantity"],
+    attributes: orderProductAttributes,
     include: [
       {
         model: Product,
@@ -115,7 +118,7 @@ export const getOrders = async (req, res) => {
       { model: Size, attributes: ["id", "name"] },
       {
         model: Order,
-        attributes: ["total", "createdAt", "updatedAt"],
+        attributes: ["total", "createdAt", "updatedAt", "stripeSessionId"],
         include: [
           {
             model: User,
@@ -143,7 +146,7 @@ export const getOrders = async (req, res) => {
 export const getUserOrders = async (req, res) => {
   const userId = req.userId;
   const orders = await OrderProduct.findAll({
-    attributes: ["orderId", "quantity"],
+    attributes: orderProductAttributes,
     include: [
       {
         model: Product,
@@ -154,7 +157,7 @@ export const getUserOrders = async (req, res) => {
       {
         model: Order,
         where: { userId },
-        attributes: ["total", "createdAt", "updatedAt"],
+        attributes: ["total", "createdAt", "updatedAt", "stripeSessionId"],
         include: [
           {
             model: User,
@@ -174,8 +177,14 @@ export const getUserOrders = async (req, res) => {
 };
 
 export const createOrder = async (req, res) => {
-  const { products } = req.body;
+  const { products, stripeSessionId } = req.body;
   const userId = req.userId;
+
+  const orderWithStripeIdAlreadyExists = await Order.findOne({ where: { stripeSessionId } });
+  if (orderWithStripeIdAlreadyExists) {
+    res.status(201).json({ status: 400, message: "Order with this stripe session id already exists" });
+    return;
+  }
 
   const transaction = await sequelize.transaction(); // Start a transaction
 
@@ -211,15 +220,20 @@ export const createOrder = async (req, res) => {
 
     if (!order) throw new ErrorResponse("Failed to create order", 500);
 
-    const orderProducts = products.map((product) => {
-      return {
-        orderId: order.id,
-        productId: product.productId,
-        patternId: product.patternId,
-        sizeId: product.sizeId,
-        quantity: product.quantity,
-      };
-    });
+    const orderProducts = await Promise.all(
+      products.map(async (product) => {
+        const size = await Size.findByPk(product.sizeId, { transaction });
+        const productFromDB = await Product.findByPk(product.productId, { transaction });
+        return {
+          orderId: order.id,
+          productId: product.productId,
+          patternId: product.patternId,
+          sizeId: product.sizeId,
+          quantity: product.quantity,
+          price: calculatePriceForProduct(productFromDB, size),
+        };
+      })
+    );
     // Create the order products
     await OrderProduct.bulkCreate(orderProducts, { transaction });
     // Get the created order with products

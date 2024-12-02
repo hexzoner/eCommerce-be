@@ -2,6 +2,7 @@
 import { Product, Size, Pattern } from "../db/associations.js";
 import { CartProduct } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
+import { calculateProductsTotal } from "../utils/PriceCalculation.js";
 import sequelize from "../db/index.js";
 
 async function getCart(userId) {
@@ -15,7 +16,7 @@ async function getCart(userId) {
         attributes: ["id", "name", "price", "image", "description"],
       },
       { model: Pattern, attributes: ["id", "name", "icon"] },
-      { model: Size, attributes: ["id", "name"] },
+      { model: Size, attributes: ["id", "name", "squareMeters"] },
     ],
     order: [
       [Product, "id", "ASC"],
@@ -23,20 +24,6 @@ async function getCart(userId) {
       ["sizeId", "ASC"],
     ],
   });
-}
-
-export function calculateProductsTotal(userCart) {
-  for (let i = 0; i < userCart.length; i++) {
-    const heightWidth = userCart[i].size.name.split("x");
-    if (heightWidth.length === 2) userCart[i].product.price = (userCart[i].product.price * heightWidth[0] * heightWidth[1]).toFixed(2);
-  }
-
-  // Calculate the total price
-  const totalPrice = userCart.reduce((total, item) => {
-    return total + item.product.price * item.quantity;
-  }, 0);
-
-  return { products: userCart, total: totalPrice.toFixed(2) };
 }
 
 export const getUserCart = async (req, res) => {

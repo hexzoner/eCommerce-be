@@ -37,6 +37,12 @@ const OrderProduct = sequelize.define(
         key: "id",
       },
     },
+    price: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      unique: false,
+      defaultValue: 0,
+    },
   },
   {
     indexes: [

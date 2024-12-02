@@ -11,6 +11,11 @@ const Order = sequelize.define("order", {
     },
     defaultValue: 0,
   },
+  stripeSessionId: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: true,
+  },
 });
 
 export default Order;
