@@ -1,4 +1,4 @@
-import { Order, Product, User, Pattern, Size, OrderProduct, ProductSize } from "../db/associations.js";
+import { Order, Product, User, Pattern, Size, OrderProduct, ProductSize, CartProduct } from "../db/associations.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import { calculateProductsTotal, calculatePriceForProduct } from "../utils/PriceCalculation.js";
 import sequelize from "../db/index.js";
@@ -242,6 +242,8 @@ export const createOrder = async (req, res) => {
     const orderWithTotal = calculateProductsTotal(createdOrder);
     // Update the order total
     await order.update({ total: orderWithTotal.total }, { transaction });
+    // Clear user cart
+    await CartProduct.destroy({ where: { userId }, transaction });
     await transaction.commit(); // Commit transaction if all is well
     createdOrder[0].order.total = orderWithTotal.total;
     res.status(201).json(formatOrders(createdOrder));
