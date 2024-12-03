@@ -145,7 +145,27 @@ export const getOrders = async (req, res) => {
 
 export const getUserOrders = async (req, res) => {
   const userId = req.userId;
+  const {
+    query: { page, perPage },
+  } = req;
+
+  const totalOrders = await Order.count({ where: { userId } });
+  const offset = page ? (page - 1) * perPage : 0;
+  const limit = perPage ? perPage : 20;
+
+  const orderIds = await Order.findAll({
+    where: { userId },
+    attributes: ["id"],
+    order: [["id", "DESC"]],
+    offset,
+    limit,
+  });
+  const orderIdList = orderIds.map((order) => order.id);
+
   const orders = await OrderProduct.findAll({
+    where: {
+      orderId: orderIdList, // Only fetch OrderProduct entries for current page orderIds
+    },
     attributes: orderProductAttributes,
     include: [
       {
@@ -173,7 +193,12 @@ export const getUserOrders = async (req, res) => {
       ["sizeId", "ASC"],
     ],
   });
-  res.json(formatOrders(orders));
+  res.json({
+    results: formatOrders(orders),
+    total: totalOrders,
+    page: page ? parseInt(page) : 1,
+    totalPages: Math.ceil(totalOrders / limit),
+  });
 };
 
 export const createOrder = async (req, res) => {

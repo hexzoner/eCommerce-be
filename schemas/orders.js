@@ -10,7 +10,7 @@ const orderSchema = Joi.object({
         quantity: Joi.number().integer().min(1).required(),
       })
     )
-    .min(1)
+    .min(0)
     .required(),
   total: Joi.number().min(1).optional(),
   stripeSessionId: Joi.string().required(),
