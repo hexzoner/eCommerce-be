@@ -18,6 +18,7 @@ import {
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 import { deleteImageFromS3 } from "../images-upload/upload-image-s3.js";
 import stripe from "stripe";
+const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
 // import { Op } from "sequelize";
 
 const includeModels = [
@@ -464,7 +465,7 @@ export const updateProduct = async (req, res) => {
     await product.setPatterns(patterns.map((p) => p.id)); // Set only the current patterns
   }
 
-  if (price) {
+  if (price && price != product.price) {
     for (const s of product.sizes) {
       try {
         await stripeLogicPerSize(s.id, product, price);
@@ -482,7 +483,9 @@ export const updateProduct = async (req, res) => {
     }
     await product.setSizes(sizes);
 
-    for (const s of sizes) {
+    const newlyAddedSizes = sizes.filter((size) => !product.sizes.map((s) => s.id).includes(size));
+
+    for (const s of newlyAddedSizes) {
       try {
         await stripeLogicPerSize(s, product, price);
       } catch (error) {
@@ -493,7 +496,7 @@ export const updateProduct = async (req, res) => {
 
     // Delete Stripe prices for sizes that are no longer associated with the product
     const productPrices = await ProductPrice.findAll({ where: { productId: product.id } });
-    const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
+    // const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
 
     for (const productPrice of productPrices) {
       if (!sizes.includes(productPrice.sizeId)) {
@@ -501,7 +504,11 @@ export const updateProduct = async (req, res) => {
           // Deactivate the Stripe price
           await stripeSession.prices.update(productPrice.stripePriceId, { active: false });
         }
-        // Remove the local product price from the database
+        try {
+          await ProductPrice.destroy({ where: { id: productPrice.id } });
+        } catch (error) {
+          console.error(`Failed to delete ProductPrice with id ${productPrice.id}:`, error);
+        }
         await ProductPrice.destroy({ where: { id: productPrice.id } });
       }
     }
@@ -531,7 +538,6 @@ export const deleteProduct = async (req, res) => {
   const product = await Product.findByPk(id);
   if (!product) throw new ErrorResponse("Product not found", 404);
   const productPrices = await ProductPrice.findAll({ where: { productId: product.id } });
-  const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
 
   // Delete all Stripe prices associated with the product
   for (const productPrice of productPrices) {
@@ -563,7 +569,6 @@ export const deleteProduct = async (req, res) => {
 
 async function stripeLogicPerSize(sizeId, product, price) {
   // const _product = await Product.findByPk(product.id);
-  const stripeSession = stripe(process.env.STRIPE_SECRET_KEY);
   const productPrice = await ProductPrice.findOne({ where: { productId: product.id, sizeId } });
   const size = await Size.findByPk(sizeId);
   if (!size) throw new ErrorResponse("Size not found", 404);
