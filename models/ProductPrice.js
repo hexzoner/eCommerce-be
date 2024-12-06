@@ -1,15 +1,9 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../db/index.js";
 
-const OrderProduct = sequelize.define(
-  "orderProduct",
+const ProductPrice = sequelize.define(
+  "productPrice",
   {
-    quantity: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: false,
-      defaultValue: 1,
-    },
     productId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -19,15 +13,15 @@ const OrderProduct = sequelize.define(
         key: "id",
       },
     },
-    patternId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      unique: false,
-      references: {
-        model: "patterns",
-        key: "id",
-      },
-    },
+    // patternId: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   unique: false,
+    //   references: {
+    //     model: "patterns",
+    //     key: "id",
+    //   },
+    // },
     sizeId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -43,15 +37,27 @@ const OrderProduct = sequelize.define(
       unique: false,
       defaultValue: 0,
     },
+    stripePriceId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: false,
+      defaultValue: "",
+    },
+    stripeProductId: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      unique: false,
+      defaultValue: "",
+    },
   },
   {
     indexes: [
       {
         unique: true,
-        fields: ["orderId", "productId", "patternId", "sizeId"], // Composite unique constraint
+        fields: ["productId", "sizeId"], // Composite unique constraint
       },
     ],
   }
 );
 
-export { OrderProduct };
+export default ProductPrice;

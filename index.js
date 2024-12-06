@@ -21,6 +21,8 @@ import featureRouter from "./routes/featureRoutes.js";
 import roomRouter from "./routes/roomRoutes.js";
 import productPatternRouter from "./routes/productPatterns.js";
 import S3Router from "./images-upload/upload-image-s3.js";
+import checkoutRouter from "./routes/checkoutRoutes.js";
+import productPricesRouter from "./routes/productPricesRoutes.js";
 
 const app = express();
 export const port = process.env.PORT || 3030;
@@ -48,6 +50,8 @@ app.use("/features", featureRouter);
 app.use("/rooms", roomRouter);
 app.use("/patterns", productPatternRouter);
 app.use("/s3", S3Router);
+app.use("/checkout", checkoutRouter);
+app.use("/product-prices", productPricesRouter);
 
 app.use(errorHandler);
 

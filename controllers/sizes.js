@@ -5,6 +5,7 @@ function formatedSize(size) {
   return {
     id: size.id,
     name: size.name,
+    squareMeters: size.squareMeters,
   };
 }
 

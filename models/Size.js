@@ -13,6 +13,12 @@ const Size = sequelize.define("size", {
       },
     },
   },
+  squareMeters: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    unique: false,
+    defaultValue: 0,
+  },
 });
 
 export default Size;

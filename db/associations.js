@@ -19,20 +19,29 @@ import Material from "../models/Material.js";
 import Technique from "../models/Technique.js";
 import Room from "../models/Room.js";
 import Feature from "../models/Feature.js";
+import ProductPrice from "../models/ProductPrice.js";
 // import { ProductPattern } from "../models/ProductPattern.js";
 import { Image, Pattern } from "../models/Pattern.js";
 
 User.hasMany(Order, { foreignKey: { name: "userId", allowNull: false } });
 Order.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
 
+Order.belongsToMany(Product, { through: OrderProduct });
+Product.belongsToMany(Order, { through: OrderProduct });
+
+// Association from Order to OrderProduct
+Order.hasMany(OrderProduct, { foreignKey: "orderId" });
+OrderProduct.belongsTo(Order, { foreignKey: "orderId" });
+
+OrderProduct.belongsTo(Product, { foreignKey: "productId" });
+OrderProduct.belongsTo(Pattern, { foreignKey: "patternId" });
+OrderProduct.belongsTo(Size, { foreignKey: "sizeId" });
+
 // User.hasOne(Cart, { foreignKey: { name: "userId", allowNull: false } });
 // Cart.belongsTo(User, { foreignKey: { name: "userId", allowNull: false } });
 
 Category.hasMany(Product, { foreignKey: { name: "categoryId", allowNull: false } });
 Product.belongsTo(Category, { foreignKey: { name: "categoryId", allowNull: false } });
-
-Order.belongsToMany(Product, { through: OrderProduct });
-Product.belongsToMany(Order, { through: OrderProduct });
 
 //------------------
 User.belongsToMany(Product, { through: CartProduct, as: "CartProducts" });
@@ -51,10 +60,15 @@ Pattern.hasMany(Image, { foreignKey: "patternId" });
 Pattern.belongsTo(Product, { foreignKey: "productId" });
 Product.hasMany(Pattern, { foreignKey: "productId" });
 
-// Ensure CartProduct is associated with Color and Size
+// CartProduct is associated with Color and Size
 CartProduct.belongsTo(Product, { foreignKey: "productId" });
 CartProduct.belongsTo(Pattern, { foreignKey: "patternId" });
 CartProduct.belongsTo(Size, { foreignKey: "sizeId" });
+
+// Table for storing product prices
+ProductPrice.belongsTo(Product, { foreignKey: "productId" });
+// ProductPrice.belongsTo(Pattern, { foreignKey: "patternId" });
+ProductPrice.belongsTo(Size, { foreignKey: "sizeId" });
 
 //------------------
 User.belongsToMany(Product, { through: Wishlist, as: "WishlistProducts" });
@@ -70,8 +84,8 @@ Size.belongsToMany(Product, { through: ProductSize });
 Product.belongsTo(Size, { as: "defaultSize", foreignKey: "defaultSizeId" });
 Size.hasMany(Product, { as: "defaultForProducts", foreignKey: "defaultSizeId" });
 
-Review.belongsTo(Product, { foreignKey: "productId" });
-Product.hasMany(Review, { foreignKey: "productId" });
+Review.belongsTo(Product, { foreignKey: "productId", allowNull: true });
+Product.hasMany(Review, { foreignKey: "productId", allowNull: true });
 
 Producer.hasMany(Product, { foreignKey: { name: "producerId", allowNull: false } });
 Product.belongsTo(Producer, { foreignKey: { name: "producerId", allowNull: false } });
@@ -120,4 +134,5 @@ export {
   Image,
   Pattern,
   // PatternImage,
+  ProductPrice,
 };

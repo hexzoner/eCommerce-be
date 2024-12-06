@@ -22,4 +22,7 @@ const sequelize = new Sequelize(process.env.PG_URI, {
 // await sequelize.query('ALTER TABLE "cartProducts" ADD CONSTRAINT "cartProducts_pkey" PRIMARY KEY ("productId", "userId", "patternId", "sizeId")');
 // UPDATE products SET producerId = 1 WHERE producerId IS NULL;
 // await sequelize.query('UPDATE "products" SET "producerId" = 1 WHERE "producerId" IS NULL');
+
+// await sequelize.query('ALTER TABLE "orderProducts" DROP CONSTRAINT IF EXISTS "orderProducts_pkey"');
+// await sequelize.query('ALTER TABLE "orderProducts" ADD CONSTRAINT "orderProducts_pkey" PRIMARY KEY ("productId", "orderId", "patternId", "sizeId")');
 export default sequelize;
