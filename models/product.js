@@ -98,6 +98,12 @@ const Product = sequelize.define("product", {
     unique: false,
     defaultValue: "",
   },
+  producerQuote: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    unique: false,
+    defaultValue: "",
+  },
 });
 
 export default Product;
