@@ -109,7 +109,28 @@ Room.belongsToMany(Product, { through: ProductRoom });
 Product.belongsToMany(Feature, { through: ProductFeature });
 Feature.belongsToMany(Product, { through: ProductFeature });
 
-sequelize.sync({ alter: true });
+// sequelize.sync({ alter: true });
+await User.sync({ alter: true });
+await Order.sync({ alter: true });
+await Product.sync({ alter: true });
+await Category.sync({ alter: true });
+await Color.sync({ alter: true });
+await OrderProduct.sync({ alter: true });
+await ProductSize.sync({ alter: true });
+await Size.sync({ alter: true });
+await Wishlist.sync({ alter: true });
+await CartProduct.sync({ alter: true });
+await Producer.sync({ alter: true });
+await Review.sync({ alter: true });
+await Style.sync({ alter: true });
+await Shape.sync({ alter: true });
+await Material.sync({ alter: true });
+await Technique.sync({ alter: true });
+await Room.sync({ alter: true });
+await Feature.sync({ alter: true });
+await Image.sync({ alter: true });
+await Pattern.sync({ alter: true });
+await ProductPrice.sync({ alter: true });
 
 export {
   User,
