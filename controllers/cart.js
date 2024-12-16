@@ -13,7 +13,7 @@ async function getCart(userId) {
     include: [
       {
         model: Product,
-        attributes: ["id", "name", "price", "image", "description"],
+        attributes: ["id", "name", "price", "image", "description", "samplePrice"],
       },
       { model: Pattern, attributes: ["id", "name", "icon"] },
       { model: Size, attributes: ["id", "name", "squareMeters"] },

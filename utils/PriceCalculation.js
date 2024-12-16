@@ -16,6 +16,5 @@ export function calculateProductsTotal(userCart) {
 
 export function calculatePriceForProduct(product, size) {
   //   console.log("Product:", product);
-  //   console.log("Size:", size);
-  return (product.price * size.squareMeters).toFixed(2);
+  return size.name === "Sample" ? product.samplePrice : (product.price * size.squareMeters).toFixed(2);
 }

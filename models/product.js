@@ -104,6 +104,15 @@ const Product = sequelize.define("product", {
     unique: false,
     defaultValue: "",
   },
+  samplePrice: {
+    type: DataTypes.FLOAT,
+    allowNull: true,
+    unique: false,
+    defaultValue: 0,
+    validate: {
+      isFloat: { msg: "Sample price must be a float number" },
+    },
+  },
 });
 
 export default Product;

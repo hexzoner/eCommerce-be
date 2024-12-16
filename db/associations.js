@@ -109,7 +109,7 @@ Room.belongsToMany(Product, { through: ProductRoom });
 Product.belongsToMany(Feature, { through: ProductFeature });
 Feature.belongsToMany(Product, { through: ProductFeature });
 
-// sequelize.sync({ alter: true });
+// sequelize.sync({ alter: false });
 await User.sync({ alter: true });
 await Order.sync({ alter: true });
 await Product.sync({ alter: true });
