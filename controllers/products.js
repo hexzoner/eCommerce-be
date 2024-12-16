@@ -338,7 +338,7 @@ export const updateProduct = async (req, res) => {
     params: { id },
   } = req;
 
-  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId, patterns, price } = req.body;
+  const { sizes, defaultSizeId, colors, producerId, rooms, features, mainPatternId, patterns, price, samplePrice } = req.body;
 
   const product = await Product.findByPk(id, {
     attributes: { exclude: excludeAttributes },
@@ -467,8 +467,24 @@ export const updateProduct = async (req, res) => {
 
   if (price && price != product.price) {
     for (const s of product.sizes) {
+      if (s.name === "Sample") continue; // Skip updating the sample
       try {
+        // console.log(s);
         await stripeLogicPerSize(s.id, product, price);
+      } catch (error) {
+        console.log(error);
+        throw new ErrorResponse("Error updating Stripe prices: " + error.message, 500);
+      }
+    }
+  }
+
+  if (samplePrice && samplePrice != product.samplePrice) {
+    console.log("Updating sample price");
+    const productSampleSize = product.sizes.find((s) => s.name === "Sample");
+    if (productSampleSize) {
+      try {
+        // console.log("Updating stripe sample price ", samplePrice);
+        await stripeLogicPerSize(productSampleSize.id, product, samplePrice);
       } catch (error) {
         console.log(error);
         throw new ErrorResponse("Error updating Stripe prices: " + error.message, 500);
@@ -487,7 +503,10 @@ export const updateProduct = async (req, res) => {
 
     for (const s of newlyAddedSizes) {
       try {
-        await stripeLogicPerSize(s, product, price);
+        const _size = await Size.findByPk(s);
+        // console.log(_size);
+        if (_size.name === "Sample") await stripeLogicPerSize(s, product, samplePrice);
+        else await stripeLogicPerSize(s, product, price);
       } catch (error) {
         console.log(error);
         throw new ErrorResponse("Error updating Stripe prices: " + error.message, 500);
@@ -573,7 +592,8 @@ async function stripeLogicPerSize(sizeId, product, price) {
   const size = await Size.findByPk(sizeId);
   if (!size) throw new ErrorResponse("Size not found", 404);
 
-  const newTotalPrice = Math.round(price * size.squareMeters * 100); // Multiply by 100 to convert to cents
+  const newTotalPrice = size.name === "Sample" ? Math.round(price * 100) : Math.round(price * size.squareMeters * 100); // Multiply by 100 to convert to cents
+
   // console.log("---- New Total Price ----" + newTotalPrice);
   // const stripeProductExists = await stripeSession.products.retrieve(productPrice.stripeProductId);
 

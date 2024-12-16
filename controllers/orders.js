@@ -10,7 +10,7 @@ const orderOptions = {
   include: [
     {
       model: Product,
-      attributes: ["id", "name", "price", "image", "description"],
+      attributes: ["id", "name", "price", "image", "description", "samplePrice"],
     },
     { model: Pattern, attributes: ["id", "name", "icon"] },
     { model: Size, attributes: ["id", "name", "squareMeters"] },
@@ -112,7 +112,7 @@ export const getOrders = async (req, res) => {
     include: [
       {
         model: Product,
-        attributes: ["id", "name", "price", "image", "description"],
+        attributes: ["id", "name", "price", "image", "description", "samplePrice"],
       },
       { model: Pattern, attributes: ["id", "name", "icon"] },
       { model: Size, attributes: ["id", "name"] },
@@ -170,7 +170,7 @@ export const getUserOrders = async (req, res) => {
     include: [
       {
         model: Product,
-        attributes: ["id", "name", "price", "image", "description"],
+        attributes: ["id", "name", "price", "image", "description", "samplePrice"],
       },
       { model: Pattern, attributes: ["id", "name", "icon"] },
       { model: Size, attributes: ["id", "name"] },
