@@ -56,7 +56,7 @@ export const verificationEmail = async (req, res) => {
       templateId: verificationTemplateId,
       dynamicTemplateData: {
         name: name,
-        link: `${url}confirm?token=${token}`,
+        link: `${url}verification?token=${token}`,
       },
     };
     sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -76,6 +76,22 @@ export const verificationEmail = async (req, res) => {
   };
 
   sendConfirmationEmail(email, userExist.firstName, token);
+};
+
+export const emailConfirmation = async (req, res) => {
+  const { userId, purpose } = req;
+
+  if (!userId || purpose !== "emailVerification") throw new ErrorResponse("Invalid or expired token", 400);
+  const user = await User.findByPk(userId);
+  if (!user) throw new ErrorResponse("Verification error - User not found", 404);
+
+  user.verified = true;
+  await user.save();
+
+  res.json({
+    message: "Success",
+    data: { userId: user.id, email: user.email, verified: user.verified },
+  });
 };
 
 // const msg = {

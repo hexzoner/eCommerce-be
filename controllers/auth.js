@@ -12,6 +12,7 @@ function getUserResponse(user) {
     lastName: user.lastName,
     email: user.email,
     role: user.role,
+    verified: user.verified,
   };
 }
 
