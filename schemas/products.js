@@ -28,6 +28,7 @@ const productSchema = {
     patterns: Joi.array().items().required(),
     producerQuote: Joi.string().min(1).max(500).optional().allow(""),
     samplePrice: Joi.number().optional().allow(""),
+    shippingDays: Joi.number().min(6).integer().required(),
   }),
   PUT: Joi.object({
     name: Joi.string().min(1).max(100).optional(),
@@ -56,6 +57,7 @@ const productSchema = {
     patterns: Joi.array().items().optional(),
     producerQuote: Joi.string().min(1).max(500).optional().allow(""),
     samplePrice: Joi.number().optional().allow(""),
+    shippingDays: Joi.number().min(6).integer().optional(),
   }),
 };
 

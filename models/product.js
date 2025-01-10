@@ -111,6 +111,23 @@ const Product = sequelize.define("product", {
     defaultValue: 0,
     validate: {
       isFloat: { msg: "Sample price must be a float number" },
+      min: {
+        args: [0],
+        msg: "Sample price must be a positive number",
+      },
+    },
+  },
+  shippingDays: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    unique: false,
+    defaultValue: 10,
+    validate: {
+      isInt: { msg: "Shipping days must be an integer number" },
+      min: {
+        args: [0],
+        msg: "Shipping days must be a positive number",
+      },
     },
   },
 });
