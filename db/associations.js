@@ -112,7 +112,7 @@ Feature.belongsToMany(Product, { through: ProductFeature });
 sequelize.sync({ alter: false });
 // await User.sync({ alter: true });
 // await Order.sync({ alter: true });
-// await Product.sync({ alter: true });
+await Product.sync({ alter: true });
 // await Category.sync({ alter: true });
 // await Color.sync({ alter: true });
 // await OrderProduct.sync({ alter: true });
