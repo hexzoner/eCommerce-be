@@ -10,9 +10,13 @@ export const GetWishlist = async (req, res) => {
       as: "WishlistProducts", // Alias for wishlist
       through: { attributes: [] }, // This will exclude the Wishlist join table from the response
       include: [
-        { model: Category, attributes: ["name"] }, // Include category name
-        { model: Color, attributes: ["name"] }, // Include color name
-        { model: Size, attributes: ["name"] }, // Include size name
+        { model: Category, attributes: ["name"] },
+        {
+          model: Color,
+          as: "defaultColor",
+          attributes: ["id", "name"],
+        },
+        { model: Size, attributes: ["id", "name", "squareMeters"] },
         // {
         //   model: Pattern,
         //   attributes: ["name", "icon", "active", "order"],

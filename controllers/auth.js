@@ -54,7 +54,7 @@ export async function signup(req, res) {
     expiresIn: tokenExpireTime,
   });
 
-  res.json({ user: { id: user.id, firstName, lastName, email, role }, token });
+  res.json({ user: getUserResponse(user), token });
 }
 
 export async function me(req, res) {
